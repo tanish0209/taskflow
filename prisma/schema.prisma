@@ -29,6 +29,8 @@ model User{
   uploads Attachment[] @relation("UserUploads")
   notifications Notification[]
   activityLogs ActivityLog[]
+  joinRequest JoinRequest[]
+  projectMember ProjectMember[]
 }
 
 model Project{
@@ -45,6 +47,8 @@ model Project{
   tasks Task[]
   attachments Attachment[]
   activityLogs ActivityLog[]
+  joinRequest JoinRequest[]
+  projectMember ProjectMember[]
 }
 
 model Task{
@@ -145,6 +149,43 @@ model ActivityLog{
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
+model JoinRequest {
+  id        String   @id @default(cuid())
+  status    JoinRequestStatus @default(PENDING)
+  createdAt DateTime @default(now())
+
+  userId    String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId]) 
+}
+
+enum ProjectRole {
+  MEMBER
+  MANAGER
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 
 enum Role{
   admin

@@ -8,7 +8,7 @@ export const createSubTaskSchema = z.object({
   subtaskStatus: subTaskStatusEnum.default("todo"),
   taskId: z.cuid({ error: "Invalid task ID" }),
 });
-export type creatSubTaskInput = z.infer<typeof createSubTaskSchema>;
+export type createSubTaskInput = z.infer<typeof createSubTaskSchema>;
 
 export const updateSubTaskSchema = z.object({
   title: z.string().min(4).max(100).optional(),

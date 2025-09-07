@@ -9,13 +9,3 @@ export const createActivityLogSchema = z.object({
 });
 
 export type CreateActivityLogInput = z.infer<typeof createActivityLogSchema>;
-
-export const updateActivityLogSchema = z.object({
-  action: z.string().min(2).optional(),
-
-  userId: z.cuid().optional().nullable(),
-  taskId: z.cuid().optional().nullable(),
-  projectId: z.cuid().optional().nullable(),
-});
-
-export type UpdateActivityLogInput = z.infer<typeof updateActivityLogSchema>;
