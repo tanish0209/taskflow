@@ -40,6 +40,13 @@ export const userService = {
         email: true,
         role: true,
         createdAt: true,
+        projects: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          },
+        },
       },
     });
   },
@@ -53,6 +60,13 @@ export const userService = {
         email: true,
         role: true,
         createdAt: true,
+        projects: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          },
+        },
       },
     });
     if (!user) throw new Error("User not found");

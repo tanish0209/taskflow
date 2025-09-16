@@ -45,6 +45,12 @@ export const attachmentService = {
       },
     });
   },
+  async getAttachmentsByTask(taskId: string) {
+    return prisma.attachment.findMany({
+      where: { taskId },
+      include: { user: true },
+    });
+  },
   async getAttachmentById(id: string) {
     const attachment = await prisma.attachment.findUnique({
       where: { id },

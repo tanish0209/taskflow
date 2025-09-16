@@ -64,7 +64,14 @@ export const joinRequestService = {
       data: { status: "REJECTED" },
     });
   },
-
+  async getAllJoinRequests() {
+    return prisma.joinRequest.findMany({
+      include: {
+        user: true,
+        project: true,
+      },
+    });
+  },
   // Get all join requests for a project
   async getJoinRequestsForProject(projectId: string) {
     return prisma.joinRequest.findMany({

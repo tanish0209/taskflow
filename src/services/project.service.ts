@@ -5,7 +5,7 @@ import {
   UpdateProjectInput,
   updateProjectSchema,
 } from "@/schemas/project.schema";
-export const createProjectService = {
+export const ProjectService = {
   async createProject(data: CreateProjectInput) {
     const ValidatedData = createProjectSchema.parse(data);
 
@@ -24,12 +24,18 @@ export const createProjectService = {
   },
   async getAllProjects() {
     return prisma.project.findMany({
-      include: { owner: true },
+      include: { owner: true, members: true, tasks: true },
     });
   },
-  async getProjectById(projectId: string) {
+  async getProjectsByUser(userId: string) {
+    return prisma.project.findMany({
+      where: { members: { some: { userId } } },
+      include: { tasks: true },
+    });
+  },
+  async getProjectById(id: string) {
     const project = await prisma.project.findUnique({
-      where: { projectId },
+      where: { id },
       include: {
         owner: true,
         tasks: true,
@@ -40,10 +46,10 @@ export const createProjectService = {
     if (!project) throw new Error("Project not found");
     return project;
   },
-  async updateProject(data: UpdateProjectInput, projectId: string) {
+  async updateProject(data: UpdateProjectInput, id: string) {
     const ValidatedData = updateProjectSchema.parse(data);
     const existingProject = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { id },
     });
 
     if (!existingProject) {
@@ -51,15 +57,15 @@ export const createProjectService = {
     }
 
     const updatedProject = await prisma.project.update({
-      where: { id: projectId },
+      where: { id },
       data: ValidatedData,
     });
 
     return updatedProject;
   },
-  async deleteProject(projectId: string) {
+  async deleteProject(id: string) {
     const existingProject = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { id },
     });
 
     if (!existingProject) {
@@ -67,7 +73,7 @@ export const createProjectService = {
     }
 
     await prisma.project.delete({
-      where: { id: projectId },
+      where: { id },
     });
 
     return { message: "Project deleted successfully" };

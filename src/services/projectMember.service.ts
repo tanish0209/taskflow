@@ -7,11 +7,9 @@ import {
 } from "@/schemas/projectMember.schema";
 
 export const projectMemberService = {
-  // Add user to project
   async addMember(data: CreateProjectMemberInput) {
     const validatedData = createProjectMemberSchema.parse(data);
 
-    // Check if already a member
     const existing = await prisma.projectMember.findUnique({
       where: {
         projectId_userId: {
@@ -27,7 +25,6 @@ export const projectMemberService = {
     });
   },
 
-  // Remove user from project
   async removeMember(projectId: string, userId: string) {
     const existing = await prisma.projectMember.findUnique({
       where: { projectId_userId: { projectId, userId } },
@@ -39,7 +36,6 @@ export const projectMemberService = {
     });
   },
 
-  // Update member role
   async updateMemberRole(
     projectId: string,
     userId: string,
@@ -53,7 +49,6 @@ export const projectMemberService = {
     });
   },
 
-  // List all members of a project
   async getMembersByProject(projectId: string) {
     return prisma.projectMember.findMany({
       where: { projectId },
@@ -61,7 +56,6 @@ export const projectMemberService = {
     });
   },
 
-  // List all projects a user belongs to
   async getProjectsForUser(userId: string) {
     return prisma.projectMember.findMany({
       where: { userId },

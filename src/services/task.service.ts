@@ -9,18 +9,21 @@ import {
 export const taskService = {
   async createTask(data: createTaskInput) {
     const ValidatedData = createTaskSchema.parse(data);
+
     if (ValidatedData.projectId) {
       const project = await prisma.project.findUnique({
         where: { id: ValidatedData.projectId },
       });
       if (!project) throw new Error("Project does not exist");
     }
+
     if (ValidatedData.assigneeId) {
       const user = await prisma.user.findUnique({
         where: { id: ValidatedData.assigneeId },
       });
-      if (!user) throw new Error("Asignee does not exist");
+      if (!user) throw new Error("Assignee does not exist");
     }
+
     return prisma.task.create({
       data: {
         ...ValidatedData,
@@ -75,13 +78,48 @@ export const taskService = {
         project: { select: { id: true, name: true } },
       },
     });
-    if (!task) throw new Error("task not found");
+    if (!task) throw new Error("Task not found");
     return task;
+  },
+
+  async getTasksByUser(userId: string) {
+    return prisma.task.findMany({
+      where: { assigneeId: userId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        priority: true,
+        dueDate: true,
+        createdAt: true,
+        updatedAt: true,
+        project: { select: { id: true, name: true } },
+      },
+    });
+  },
+
+  async getTasksByProject(projectId: string) {
+    return prisma.task.findMany({
+      where: { projectId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        priority: true,
+        dueDate: true,
+        createdAt: true,
+        updatedAt: true,
+        assignee: { select: { id: true, name: true, email: true } },
+      },
+    });
   },
 
   async updateTask(id: string, data: updateTaskInput) {
     const ValidatedData = updateTaskSchema.parse(data);
-    const existingTask = await prisma.task.finUnique({ whre: { id } });
+
+    const existingTask = await prisma.task.findUnique({ where: { id } });
     if (!existingTask) throw new Error("Task does not exist");
 
     if (ValidatedData.projectId) {
@@ -90,6 +128,7 @@ export const taskService = {
       });
       if (!project) throw new Error("Project does not exist");
     }
+
     if (ValidatedData.assigneeId) {
       const user = await prisma.user.findUnique({
         where: { id: ValidatedData.assigneeId },
@@ -118,6 +157,7 @@ export const taskService = {
       },
     });
   },
+
   async deleteTask(id: string) {
     const existingTask = await prisma.task.findUnique({ where: { id } });
     if (!existingTask) throw new Error("Task not found");
