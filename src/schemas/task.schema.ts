@@ -15,6 +15,7 @@ export const createTaskSchema = z.object({
 
   projectId: z.cuid({ error: "Invalid Project Id" }),
   assigneeId: z.cuid({ error: "Invalid Assignee Id" }),
+  ownerId: z.cuid({ error: "Invalid Owner Id" }),
 });
 export type createTaskInput = z.infer<typeof createTaskSchema>;
 
@@ -29,5 +30,6 @@ export const updateTaskSchema = z.object({
 
   projectId: z.cuid().optional(),
   assigneeId: z.cuid().optional().nullable(),
+  ownerId: z.cuid().optional().nullable(),
 });
 export type updateTaskInput = z.infer<typeof updateTaskSchema>;

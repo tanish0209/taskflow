@@ -9,11 +9,12 @@ export async function POST(req: NextRequest) {
     await requireRole(["manager", "team_lead"]);
     const body = await req.json();
     const validatedData = createTaskSchema.parse(body);
-    const task = taskService.createTask(validatedData);
+
+    const task = await taskService.createTask(validatedData);
+
     return NextResponse.json({ success: true, data: task }, { status: 201 });
   } catch (error) {
     console.error(error);
-
     if (error instanceof ZodError) {
       return NextResponse.json(
         { success: false, errors: error.issues },
@@ -27,11 +28,25 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
 export async function GET() {
   try {
     const tasks = await taskService.getAllTasks();
+    const mappedTasks = tasks.map((t) => ({
+      ...t,
+      owner: t.owner
+        ? { id: t.owner.id, name: t.owner.name, email: t.owner.email }
+        : null,
+      assignee: t.assignee
+        ? { id: t.assignee.id, name: t.assignee.name, email: t.assignee.email }
+        : null,
+      project: t.project ? { id: t.project.id, name: t.project.name } : null,
+    }));
 
-    return NextResponse.json({ success: true, data: tasks }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: mappedTasks },
+      { status: 200 }
+    );
   } catch (error: unknown) {
     console.error(error);
     const err = error as Error;

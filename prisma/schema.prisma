@@ -31,6 +31,7 @@ model User{
   activityLogs ActivityLog[]
   joinRequest JoinRequest[]
   projectMember ProjectMember[]
+  assigntasks Task[] @relation("AssignedBy") 
 }
 
 model Project{
@@ -68,6 +69,9 @@ model Task{
 
   assigneeId String
   assignee User @relation("UserTasks",fields:[assigneeId],references:[id],onDelete:SetNull)
+
+  ownerId String?
+  owner User? @relation("AssignedBy",fields:[ownerId],references:[id],onDelete:SetNull)
 
   subtasks Subtask[]
   comments Comment[]

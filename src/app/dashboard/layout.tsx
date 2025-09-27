@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -31,48 +31,69 @@ const DashboardLayout = ({ children }: Props) => {
   const router = useRouter();
   const [profileExpanded, setProfileExpanded] = useState(false);
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status !== "loading" && !session) {
+      router.push("/login");
+    }
+  }, [session, status, router]);
+
   if (status === "loading") return <p>Loading...</p>;
-  if (!session) {
-    router.push("/login");
-    return null;
-  }
+  if (!session) return null;
 
   const role = session.user.role;
   const id = session.user.id;
+
   const commonLinks = [
     { href: `/dashboard/${role}/${id}`, label: "Dashboard", icon: House },
-    {
-      href: `/dashboard/${role}/${id}/tasks`,
-      label: "My Tasks",
-      icon: ClipboardList,
-    },
-    {
-      href: `/dashboard/${role}/${id}/projects`,
-      label: "My Projects",
-      icon: BookCheck,
-    },
-    {
-      href: `/dashboard/${role}/${id}/calendar`,
-      label: "Calendar",
-      icon: CalendarDays,
-    },
   ];
 
   const roleLinks: Record<
     string,
     { href: string; label: string; icon: React.ElementType }[]
   > = {
-    employee: [],
-    "team-lead": [
+    employee: [
+      {
+        href: `/dashboard/${role}/${id}/tasks`,
+        label: "My Tasks",
+        icon: ClipboardList,
+      },
+      {
+        href: `/dashboard/${role}/${id}/projects`,
+        label: "My Projects",
+        icon: BookCheck,
+      },
+      {
+        href: `/dashboard/${role}/${id}/calendar`,
+        label: "Calendar",
+        icon: CalendarDays,
+      },
+    ],
+    team_lead: [
+      {
+        href: `/dashboard/${role}/${id}/tasks`,
+        label: "My Tasks",
+        icon: ClipboardList,
+      },
       {
         href: `/dashboard/${role}/${id}/manage-tasks`,
         label: "Manage Tasks",
         icon: ClipboardCheck,
       },
       {
+        href: `/dashboard/${role}/${id}/projects`,
+        label: "My Projects",
+        icon: BookCheck,
+      },
+      {
         href: `/dashboard/${role}/${id}/manage-requests`,
         label: "Join Requests",
         icon: UserPlus,
+      },
+      {
+        href: `/dashboard/${role}/${id}/calendar`,
+        label: "Calendar",
+        icon: CalendarDays,
       },
     ],
     manager: [
@@ -81,8 +102,18 @@ const DashboardLayout = ({ children }: Props) => {
         label: "Manage Projects",
         icon: BookOpenCheck,
       },
+      {
+        href: `/dashboard/${role}/${id}/manage-requests`,
+        label: "Join Requests",
+        icon: UserPlus,
+      },
       { href: "/dashboard/members", label: "Project Members", icon: Users },
       { href: "/dashboard/reports", label: "Reports", icon: SquareActivity },
+      {
+        href: `/dashboard/${role}/${id}/calendar`,
+        label: "Calendar",
+        icon: CalendarDays,
+      },
     ],
     admin: [
       { href: "/dashboard/users", label: "User Management", icon: UserCog },
@@ -139,15 +170,19 @@ const DashboardLayout = ({ children }: Props) => {
                   : "Team Lead Tools"}
               </h2>
               <nav className="space-y-2">
-                {roleLinks[role].map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="block px-3 py-2 rounded-full font-bold hover:bg-orange-700 duration-300"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {roleLinks[role].map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center gap-3 px-3 py-2 rounded-full font-bold hover:bg-orange-700 duration-300"
+                    >
+                      <Icon className="w-5 h-5" />
+                      {link.label}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
           )}
@@ -181,7 +216,12 @@ const DashboardLayout = ({ children }: Props) => {
                 Settings
               </Link>
               <button
-                onClick={() => signOut()}
+                onClick={() =>
+                  signOut({
+                    callbackUrl: "/login", // redirect to login after logout
+                    redirect: true,
+                  })
+                }
                 className="w-full text-left text-sm p-2 bg-amber-100 text-red-800 rounded hover:bg-amber-200 duration-300"
               >
                 Logout

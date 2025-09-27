@@ -23,6 +23,12 @@ export const taskService = {
       });
       if (!user) throw new Error("Assignee does not exist");
     }
+    if (ValidatedData.ownerId) {
+      const user = await prisma.user.findUnique({
+        where: { id: ValidatedData.ownerId },
+      });
+      if (!user) throw new Error("Owner does not exist");
+    }
 
     return prisma.task.create({
       data: {
@@ -40,6 +46,7 @@ export const taskService = {
         dueDate: true,
         createdAt: true,
         assigneeId: true,
+        ownerId: true,
         projectId: true,
       },
     });
@@ -57,6 +64,7 @@ export const taskService = {
         createdAt: true,
         updatedAt: true,
         assignee: { select: { id: true, name: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
         project: { select: { id: true, name: true } },
       },
     });
@@ -75,6 +83,7 @@ export const taskService = {
         createdAt: true,
         updatedAt: true,
         assignee: { select: { id: true, name: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
         project: { select: { id: true, name: true } },
       },
     });
@@ -85,6 +94,22 @@ export const taskService = {
   async getTasksByUser(userId: string) {
     return prisma.task.findMany({
       where: { assigneeId: userId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        priority: true,
+        dueDate: true,
+        createdAt: true,
+        updatedAt: true,
+        project: { select: { id: true, name: true } },
+      },
+    });
+  },
+  async getTasksByOwner(userId: string) {
+    return prisma.task.findMany({
+      where: { OR: [{ ownerId: userId }, { assigneeId: userId }] },
       select: {
         id: true,
         title: true,
@@ -112,6 +137,7 @@ export const taskService = {
         createdAt: true,
         updatedAt: true,
         assignee: { select: { id: true, name: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
       },
     });
   },
@@ -122,28 +148,20 @@ export const taskService = {
     const existingTask = await prisma.task.findUnique({ where: { id } });
     if (!existingTask) throw new Error("Task does not exist");
 
-    if (ValidatedData.projectId) {
-      const project = await prisma.project.findUnique({
-        where: { id: ValidatedData.projectId },
-      });
-      if (!project) throw new Error("Project does not exist");
-    }
+    const updateData: any = {
+      ...ValidatedData,
+      dueDate: ValidatedData.dueDate
+        ? new Date(ValidatedData.dueDate)
+        : undefined,
+    };
 
-    if (ValidatedData.assigneeId) {
-      const user = await prisma.user.findUnique({
-        where: { id: ValidatedData.assigneeId },
-      });
-      if (!user) throw new Error("Assignee user does not exist");
-    }
+    Object.keys(updateData).forEach(
+      (key) => updateData[key] === undefined && delete updateData[key]
+    );
 
     return prisma.task.update({
       where: { id },
-      data: {
-        ...ValidatedData,
-        dueDate: ValidatedData.dueDate
-          ? new Date(ValidatedData.dueDate)
-          : undefined,
-      },
+      data: updateData,
       select: {
         id: true,
         title: true,
@@ -153,6 +171,7 @@ export const taskService = {
         dueDate: true,
         updatedAt: true,
         assigneeId: true,
+        ownerId: true,
         projectId: true,
       },
     });
