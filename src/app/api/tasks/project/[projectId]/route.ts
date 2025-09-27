@@ -7,7 +7,8 @@ interface Params {
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const tasks = await taskService.getTasksByProject(params.projectId);
+    const { projectId } = params;
+    const tasks = await taskService.getTasksByProject(projectId);
     return NextResponse.json({ success: true, data: tasks }, { status: 200 });
   } catch (error: unknown) {
     console.error(error);

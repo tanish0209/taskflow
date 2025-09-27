@@ -6,6 +6,30 @@ import {
 } from "@/schemas/projectMember.schema";
 import { requireRole } from "@/lib/auth";
 
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { projectId: string; userId: string } }
+) {
+  try {
+    const { projectId, userId } = params;
+    const body = await req.json();
+    const role = body.role || "MEMBER";
+
+    const member = await projectMemberService.addMember({
+      projectId,
+      userId,
+      role,
+    });
+
+    return NextResponse.json(member, { status: 201 });
+  } catch (error: any) {
+    console.error(error);
+    return NextResponse.json(
+      { error: error.message || "Could not add member" },
+      { status: 500 }
+    );
+  }
+}
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { projectId: string; userId: string } }

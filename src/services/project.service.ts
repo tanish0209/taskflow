@@ -24,15 +24,27 @@ export const ProjectService = {
   },
   async getAllProjects() {
     return prisma.project.findMany({
-      include: { owner: true, members: true, tasks: true },
+      include: {
+        owner: true,
+        projectMember: true,
+        tasks: true,
+      },
     });
   },
+
   async getProjectsByUser(userId: string) {
     return prisma.project.findMany({
-      where: { members: { some: { userId } } },
-      include: { tasks: true },
+      where: {
+        projectMember: { some: { userId } },
+      },
+      include: {
+        tasks: true,
+        projectMember: true,
+        owner: true,
+      },
     });
   },
+
   async getProjectById(id: string) {
     const project = await prisma.project.findUnique({
       where: { id },

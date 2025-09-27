@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const tags = await taskTagService.getTagsForTask(params.taskId);
+    const { taskId } = params;
+    const tags = await taskTagService.getTagsForTask(taskId);
     return NextResponse.json({ success: true, data: tags }, { status: 200 });
   } catch (error) {
     console.error(error);

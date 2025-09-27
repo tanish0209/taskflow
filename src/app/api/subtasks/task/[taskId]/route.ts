@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const subtask = await subTaskService.getSubtasksByTaskId(params.taskId);
+    const { taskId } = params;
+    const subtask = await subTaskService.getSubtasksByTaskId(taskId);
     return NextResponse.json({ success: true, data: subtask }, { status: 200 });
   } catch (error: unknown) {
     console.error(error);

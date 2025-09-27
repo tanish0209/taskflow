@@ -29,7 +29,7 @@ export const attachmentService = {
     }
     return prisma.attachment.create({
       data: ValidatedData,
-      inlcude: {
+      include: {
         task: { select: { id: true, title: true } },
         project: { select: { id: true, name: true } },
         user: { select: { id: true, name: true, email: true } },

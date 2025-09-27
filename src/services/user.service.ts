@@ -20,6 +20,7 @@ export const userService = {
     return prisma.user.create({
       data: {
         ...ValidatedData,
+        role: ValidatedData.role,
         password: hashedPassword,
       },
       select: {

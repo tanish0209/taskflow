@@ -8,7 +8,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await userService.getUserById(params.id);
+    const { id } = params;
+    const user = await userService.getUserById(id);
     return NextResponse.json({ success: true, data: user }, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof ZodError) {
@@ -34,9 +35,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     const body = await req.json();
     const validatedData = updateUserSchema.parse(body);
-    const updatedUser = await userService.updateUser(params.id, validatedData);
+    const updatedUser = await userService.updateUser(id, validatedData);
     return NextResponse.json(
       { sucess: true, data: updatedUser },
       { status: 200 }
@@ -65,7 +67,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const message = await userService.deleteUser(params.id);
+    const { id } = params;
+    const message = await userService.deleteUser(id);
     return NextResponse.json({ success: true, message }, { status: 200 });
   } catch (error: unknown) {
     console.error(error);

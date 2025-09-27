@@ -8,56 +8,70 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const subtask = subTaskService.getSubtaskById(params.id);
-    return NextResponse.json({ status: true, data: subtask }, { status: 200 });
+    const { id } = params;
+    const subtask = await subTaskService.getSubtaskById(id);
+    return NextResponse.json({ success: true, data: subtask }, { status: 200 });
   } catch (error: unknown) {
     console.error(error);
-    const err = error as Error;
     return NextResponse.json(
-      { success: false, message: err.message || "Subtask not found" },
+      {
+        success: false,
+        message: (error as Error).message || "Subtask not found",
+      },
       { status: 404 }
     );
   }
 }
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     const body = await req.json();
-    const ValidatedData = updateSubTaskSchema.parse(body);
-    const subtask = await subTaskService.updateSubtask(
-      params.id,
-      ValidatedData
+    const validatedData = updateSubTaskSchema.parse(body);
+    const updatedSubtask = await subTaskService.updateSubtask(
+      id,
+      validatedData
     );
-    return NextResponse.json({ success: true, data: subtask }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: updatedSubtask },
+      { status: 200 }
+    );
   } catch (error: unknown) {
-    console.error(error);
     if (error instanceof ZodError) {
       return NextResponse.json(
         { success: false, errors: error.issues },
         { status: 400 }
       );
     }
-    const err = error as Error;
+
     return NextResponse.json(
-      { success: false, message: err.message || "Failed to update subtask" },
+      {
+        success: false,
+        message: (error as Error).message || "Failed to update subtask",
+      },
       { status: 500 }
     );
   }
 }
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const result = await subTaskService.deleteSubtask(params.id);
+    const { id } = params;
+    const result = await subTaskService.deleteSubtask(id);
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error: unknown) {
     console.error(error);
-    const err = error as Error;
     return NextResponse.json(
-      { success: false, message: err.message || "Failed to delete subtask" },
+      {
+        success: false,
+        message: (error as Error).message || "Failed to delete subtask",
+      },
       { status: 404 }
     );
   }

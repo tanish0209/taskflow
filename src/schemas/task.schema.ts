@@ -19,7 +19,7 @@ export const createTaskSchema = z.object({
 export type createTaskInput = z.infer<typeof createTaskSchema>;
 
 export const updateTaskSchema = z.object({
-  title: z.string().min(4).max(100).optional,
+  title: z.string().min(4).max(100).optional(),
   description: z.string().optional().nullable(),
   priority: taskPriorityEnum.optional(),
   status: taskStatusEnum.optional(),

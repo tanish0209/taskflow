@@ -8,7 +8,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const tag = await tagService.getTagsById(params.id);
+    const { id } = params;
+    const tag = await tagService.getTagsById(id);
     return NextResponse.json({ success: true, data: tag }, { status: 200 });
   } catch (error) {
     const err = error as Error;
@@ -23,9 +24,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     const body = await req.json();
     const validatedData = updateTagSchema.parse(body);
-    const tag = await tagService.updateTag(params.id, validatedData);
+    const tag = await tagService.updateTag(id, validatedData);
     return NextResponse.json({ success: true, data: tag }, { status: 200 });
   } catch (error) {
     if (error instanceof ZodError) {
@@ -46,7 +48,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const result = await tagService.deleteTag(params.id);
+    const { id } = params;
+    const result = await tagService.deleteTag(id);
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
     const err = error as Error;
