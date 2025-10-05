@@ -8,64 +8,60 @@ import {
 
 export const taskService = {
   async createTask(data: createTaskInput) {
-    const ValidatedData = createTaskSchema.parse(data);
+    const validatedData = createTaskSchema.parse(data);
 
-    if (ValidatedData.projectId) {
+    if (validatedData.projectId) {
       const project = await prisma.project.findUnique({
-        where: { id: ValidatedData.projectId },
+        where: { id: validatedData.projectId },
       });
       if (!project) throw new Error("Project does not exist");
     }
 
-    if (ValidatedData.assigneeId) {
+    if (validatedData.assigneeId) {
       const user = await prisma.user.findUnique({
-        where: { id: ValidatedData.assigneeId },
+        where: { id: validatedData.assigneeId },
       });
       if (!user) throw new Error("Assignee does not exist");
     }
-    if (ValidatedData.ownerId) {
+
+    if (validatedData.ownerId) {
       const user = await prisma.user.findUnique({
-        where: { id: ValidatedData.ownerId },
+        where: { id: validatedData.ownerId },
       });
       if (!user) throw new Error("Owner does not exist");
     }
 
     return prisma.task.create({
       data: {
-        ...ValidatedData,
-        dueDate: ValidatedData.dueDate
-          ? new Date(ValidatedData.dueDate)
+        ...validatedData,
+        dueDate: validatedData.dueDate
+          ? new Date(validatedData.dueDate)
           : undefined,
       },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        createdAt: true,
-        assigneeId: true,
-        ownerId: true,
-        projectId: true,
+      include: {
+        assignee: { select: { id: true, name: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
+        project: { select: { id: true, name: true } },
+        subtasks: true,
+        comments: { include: { author: true } },
+        tags: true,
+        attachments: true,
+        activityLogs: true,
       },
     });
   },
 
   async getAllTasks() {
     return prisma.task.findMany({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         assignee: { select: { id: true, name: true, email: true } },
         owner: { select: { id: true, name: true, email: true } },
         project: { select: { id: true, name: true } },
+        subtasks: true,
+        comments: { include: { author: true } },
+        tags: { include: { tag: true } },
+        attachments: true,
+        activityLogs: true,
       },
     });
   },
@@ -73,20 +69,18 @@ export const taskService = {
   async getTaskById(id: string) {
     const task = await prisma.task.findUnique({
       where: { id },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         assignee: { select: { id: true, name: true, email: true } },
         owner: { select: { id: true, name: true, email: true } },
         project: { select: { id: true, name: true } },
+        subtasks: true,
+        comments: { include: { author: true } },
+        tags: { include: { tag: true } },
+        attachments: true,
+        activityLogs: true,
       },
     });
+
     if (!task) throw new Error("Task not found");
     return task;
   },
@@ -94,32 +88,31 @@ export const taskService = {
   async getTasksByUser(userId: string) {
     return prisma.task.findMany({
       where: { assigneeId: userId },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         project: { select: { id: true, name: true } },
+        assignee: { select: { id: true, name: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
+        subtasks: true,
+        comments: { include: { author: true } },
+        tags: { include: { tag: true } },
+        attachments: true,
+        activityLogs: true,
       },
     });
   },
+
   async getTasksByOwner(userId: string) {
     return prisma.task.findMany({
       where: { OR: [{ ownerId: userId }, { assigneeId: userId }] },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         project: { select: { id: true, name: true } },
+        assignee: { select: { id: true, name: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
+        subtasks: true,
+        comments: { include: { author: true } },
+        tags: { include: { tag: true } },
+        attachments: true,
+        activityLogs: true,
       },
     });
   },
@@ -127,31 +120,28 @@ export const taskService = {
   async getTasksByProject(projectId: string) {
     return prisma.task.findMany({
       where: { projectId },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         assignee: { select: { id: true, name: true, email: true } },
         owner: { select: { id: true, name: true, email: true } },
+        subtasks: true,
+        comments: { include: { author: true } },
+        tags: { include: { tag: true } },
+        attachments: true,
+        activityLogs: true,
       },
     });
   },
 
   async updateTask(id: string, data: updateTaskInput) {
-    const ValidatedData = updateTaskSchema.parse(data);
+    const validatedData = updateTaskSchema.parse(data);
 
     const existingTask = await prisma.task.findUnique({ where: { id } });
     if (!existingTask) throw new Error("Task does not exist");
 
     const updateData: any = {
-      ...ValidatedData,
-      dueDate: ValidatedData.dueDate
-        ? new Date(ValidatedData.dueDate)
+      ...validatedData,
+      dueDate: validatedData.dueDate
+        ? new Date(validatedData.dueDate)
         : undefined,
     };
 
@@ -162,17 +152,15 @@ export const taskService = {
     return prisma.task.update({
       where: { id },
       data: updateData,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        updatedAt: true,
-        assigneeId: true,
-        ownerId: true,
-        projectId: true,
+      include: {
+        assignee: { select: { id: true, name: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
+        project: { select: { id: true, name: true } },
+        subtasks: true,
+        comments: { include: { author: true } },
+        tags: { include: { tag: true } },
+        attachments: true,
+        activityLogs: true,
       },
     });
   },

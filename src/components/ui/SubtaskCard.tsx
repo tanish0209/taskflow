@@ -3,6 +3,7 @@ interface SubtaskCardProps {
   id: string;
   title: string;
   status: "todo" | "done";
+  disabled?: boolean;
   onStatusChange: (id: string, newStatus: SubtaskCardProps["status"]) => void;
 }
 function SubtaskCard({ id, title, status, onStatusChange }: SubtaskCardProps) {

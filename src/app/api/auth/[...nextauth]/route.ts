@@ -31,7 +31,6 @@ export const authOptions = NextAuth({
           user.password
         );
         if (!isValid) return null;
-
         return {
           id: user.id,
           name: user.name,

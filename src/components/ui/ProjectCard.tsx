@@ -8,6 +8,7 @@ interface ProjectCardProps {
   projectId: string;
   status: string;
   owner: string;
+  role: "employee" | "team_lead" | "manager" | "admin";
   progress: number;
 }
 
@@ -18,6 +19,7 @@ export default function ProjectCard({
   employeeId,
   projectId,
   owner,
+  role,
   progress,
 }: ProjectCardProps) {
   const router = useRouter();
@@ -61,7 +63,7 @@ export default function ProjectCard({
       </div>
       <button
         onClick={() =>
-          router.push(`/dashboard/employee/${employeeId}/projects/${projectId}`)
+          router.push(`/dashboard/${role}/${employeeId}/projects/${projectId}`)
         }
         className="px-3 py-2 mt-3 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
       >

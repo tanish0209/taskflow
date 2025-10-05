@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react"; // 👈 to get logged in team lead
 import TaskCard from "@/components/ui/TaskCard";
 
 interface TaskTag {
@@ -33,9 +33,9 @@ interface Task {
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
-  assignee?: User | null;
-  tags?: TaskTag[];
-  attachments?: Attachment[];
+  assignee: User;
+  tags: TaskTag[];
+  attachments: Attachment[];
 }
 
 interface Project {
@@ -44,16 +44,16 @@ interface Project {
   description?: string;
   createdAt: string;
   updatedAt: string;
-  tasks?: Task[];
+  tasks: Task[];
 }
 
 export default function ProjectPage() {
   const { projectId } = useParams() as { projectId: string };
-  const { data: session } = useSession();
-  const employeeId = session?.user?.id || ""; // Session user ID
-
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { data: session, status } = useSession();
+  const userId = session?.user?.id || "";
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -67,13 +67,16 @@ export default function ProjectPage() {
         setLoading(false);
       }
     };
-    fetchProject();
-  }, [projectId]);
+
+    if (status === "authenticated") {
+      fetchProject();
+    }
+  }, [projectId, status]);
 
   if (loading) return <div>Loading project details...</div>;
   if (!project) return <div>Project not found</div>;
 
-  const tasks = project.tasks || [];
+  const { tasks, description } = project;
 
   return (
     <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6">
@@ -83,7 +86,7 @@ export default function ProjectPage() {
           {project.name}
         </h1>
         <p className="text-xl font-semibold">
-          Description: {project.description || "No description"}
+          Description: {description || "No description"}
         </p>
         <p className="text-gray-500">
           Created At: {new Date(project.createdAt).toLocaleString()}
@@ -98,20 +101,24 @@ export default function ProjectPage() {
         <h2 className="text-xl font-semibold mt-4">Tasks</h2>
         {tasks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                taskId={task.id}
-                title={task.title}
-                projectName={project.name}
-                dueDate={task.dueDate || task.createdAt}
-                employeeId={employeeId} // always session ID
-                status={task.status}
-                role="employee"
-                priority={task.priority}
-                taskLink={`/dashboard/employee/${employeeId}/tasks/${task.id}`}
-              />
-            ))}
+            {tasks.map((task) => {
+              const taskLink = `/dashboard/team_lead/${userId}/manage-tasks/${task.id}`;
+
+              return (
+                <TaskCard
+                  key={task.id}
+                  taskId={task.id}
+                  title={task.title}
+                  projectName={project.name}
+                  dueDate={task.dueDate || task.createdAt}
+                  employeeId={task.assignee?.id || ""}
+                  status={task.status}
+                  role="team_lead"
+                  taskLink={taskLink}
+                  priority={task.priority}
+                />
+              );
+            })}
           </div>
         ) : (
           <p className="text-gray-500 italic">

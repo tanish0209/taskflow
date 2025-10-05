@@ -11,6 +11,8 @@ interface TaskCardProps {
   employeeId: string;
   status: "todo" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high";
+  role: "employee" | "team_lead" | "manager" | "admin";
+  taskLink: string;
   onStatusChange?: (taskId: string, newStatus: TaskCardProps["status"]) => void;
 }
 
@@ -21,7 +23,9 @@ function TaskCard({
   employeeId,
   dueDate,
   status,
+  taskLink,
   priority,
+  role,
   onStatusChange,
 }: TaskCardProps) {
   const router = useRouter();
@@ -55,7 +59,7 @@ function TaskCard({
   };
 
   return (
-    <div className="p-6 rounded-xl shadow hover:shadow-md transition border border-gray-200 bg-white max-w-xs cursor-pointer">
+    <div className="p-6 rounded-xl shadow hover:shadow-md transition border border-gray-200 bg-white cursor-pointer">
       <div
         className={`inline-flex items-center rounded-full px-3 py-1 ${getStatusColor()}`}
       >
@@ -89,7 +93,8 @@ function TaskCard({
         Due: {new Date(dueDate).toLocaleDateString()}
       </p>
 
-      {onStatusChange && (
+      {/* 👇 Role-based condition */}
+      {role === "employee" && onStatusChange && (
         <select
           value={status}
           onChange={(e) =>
@@ -104,16 +109,12 @@ function TaskCard({
           <option value="done">Done</option>
         </select>
       )}
-      {onStatusChange && (
-        <button
-          onClick={() =>
-            router.push(`/dashboard/employee/${employeeId}/tasks/${taskId}`)
-          }
-          className="px-3 py-2 mt-3 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
-        >
-          Go to Task
-        </button>
-      )}
+      <button
+        onClick={() => router.push(taskLink)}
+        className="px-3 py-2 mt-3 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
+      >
+        Go to Task
+      </button>
     </div>
   );
 }

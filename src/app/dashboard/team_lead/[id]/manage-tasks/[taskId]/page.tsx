@@ -1,3 +1,4 @@
+// pages/dashboard/team_lead/[id]/manage-tasks/[taskId]/page.tsx
 "use client";
 
 import React, { useEffect, useState, ChangeEvent } from "react";
@@ -6,87 +7,23 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import TaskPage from "@/components/shared/TaskPage";
 
-type TaskPriority = "low" | "medium" | "high";
-type TaskStatus = "todo" | "in_progress" | "review" | "done";
-type SubtaskStatus = "todo" | "done";
-
-interface Subtask {
-  id: string;
-  title: string;
-  status: SubtaskStatus;
-}
-
-interface Comment {
-  id: string;
-  content: string;
-  author: { id: string; name: string };
-  createdAt: string;
-}
-
-interface TaskTag {
-  id: string;
-  name: string;
-}
-
-interface Attachment {
-  id: string;
-  filename: string;
-  url: string;
-}
-
-interface ActivityLog {
-  id: string;
-  description: string;
-  createdAt: string;
-}
-
-interface Project {
-  id: string;
-  name: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  priority: TaskPriority;
-  status: TaskStatus;
-  dueDate?: string;
-  startDate?: string;
-  completedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-  project: Project;
-  assignee: User;
-  subtasks?: Subtask[];
-  comments?: Comment[];
-  tags?: TaskTag[];
-  attachments?: Attachment[];
-  activityLogs?: ActivityLog[];
-}
-
-export default function EmployeeTaskPage() {
+export default function TeamLeadTaskPage() {
   const { taskId } = useParams() as { taskId: string };
   const { data: session } = useSession();
   const userId = session?.user.id;
 
-  const [task, setTask] = useState<Task | null>(null);
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [task, setTask] = useState<any>(null);
+  const [attachments, setAttachments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [fileUploading, setFileUploading] = useState(false);
 
-  // Fetch task
+  // Fetch task data
   useEffect(() => {
     const fetchTask = async () => {
       try {
         const res = await axios.get(`/api/tasks/${taskId}`);
-        const data: Task = res.data.data || res.data;
+        const data = res.data.data || res.data;
         setTask(data);
         setAttachments(data.attachments || []);
       } catch (err) {
@@ -98,16 +35,26 @@ export default function EmployeeTaskPage() {
     fetchTask();
   }, [taskId]);
 
+  // Update a task field (title, description, priority, status)
+  const updateTaskField = async (field: string, value: any) => {
+    if (!task) return;
+    try {
+      await axios.patch(`/api/tasks/${taskId}`, { [field]: value });
+      setTask({ ...task, [field]: value });
+    } catch (err) {
+      console.error("Failed to update task field:", err);
+    }
+  };
+
   // Update subtask status
-  const updateStatus = async (id: string, newStatus: SubtaskStatus) => {
-    if (!task?.subtasks) return;
+  const updateStatus = async (id: string, newStatus: "todo" | "done") => {
     try {
       await axios.patch(`/api/subtasks/${id}`, { status: newStatus });
-      setTask((prev) =>
+      setTask((prev: any) =>
         prev
           ? {
               ...prev,
-              subtasks: (prev.subtasks || []).map((sub) =>
+              subtasks: prev.subtasks.map((sub: any) =>
                 sub.id === id ? { ...sub, status: newStatus } : sub
               ),
             }
@@ -127,11 +74,8 @@ export default function EmployeeTaskPage() {
         authorId: userId,
         taskId,
       });
-      const newCommentData: Comment = res.data.data;
-      setTask((prev) =>
-        prev
-          ? { ...prev, comments: [...(prev.comments || []), newCommentData] }
-          : prev
+      setTask((prev: any) =>
+        prev ? { ...prev, comments: [...prev.comments, res.data.data] } : prev
       );
       setNewComment("");
     } catch (err) {
@@ -150,8 +94,7 @@ export default function EmployeeTaskPage() {
       const res = await axios.post(`/api/attachments`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      const newAttachment: Attachment = res.data.data;
-      setAttachments((prev) => [...prev, newAttachment]);
+      setAttachments((prev) => [...prev, res.data.data]);
     } catch (err) {
       console.error("Failed to upload file:", err);
     } finally {
@@ -169,9 +112,10 @@ export default function EmployeeTaskPage() {
       setNewComment={setNewComment}
       addComment={addComment}
       updateStatus={updateStatus}
+      updateTaskField={updateTaskField}
       handleFileUpload={handleFileUpload}
       fileUploading={fileUploading}
-      role="employee"
+      role="team_lead"
     />
   );
 }

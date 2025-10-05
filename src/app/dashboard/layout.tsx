@@ -86,11 +86,6 @@ const DashboardLayout = ({ children }: Props) => {
         icon: BookCheck,
       },
       {
-        href: `/dashboard/${role}/${id}/manage-requests`,
-        label: "Join Requests",
-        icon: UserPlus,
-      },
-      {
         href: `/dashboard/${role}/${id}/calendar`,
         label: "Calendar",
         icon: CalendarDays,
@@ -101,6 +96,11 @@ const DashboardLayout = ({ children }: Props) => {
         href: `/dashboard/${role}/${id}/manage-projects`,
         label: "Manage Projects",
         icon: BookOpenCheck,
+      },
+      {
+        href: `/dashboard/${role}/${id}/manage-tasks`,
+        label: "Manage Tasks",
+        icon: ClipboardCheck,
       },
       {
         href: `/dashboard/${role}/${id}/manage-requests`,

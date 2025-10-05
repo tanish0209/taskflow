@@ -97,6 +97,7 @@ export default function ProjectPage() {
               projectId={project.id}
               employeeId={userId}
               name={project.name}
+              role="employee"
               description={project.description}
               status={
                 project.status === "active"

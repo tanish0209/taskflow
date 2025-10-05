@@ -6,15 +6,15 @@ export const createTaskSchema = z.object({
     .string()
     .min(4, { error: "Title length is too short" })
     .max(100, { error: "Title Length is too long" }),
-  description: z.string(),
+  description: z.string().nullable().optional(),
   priority: taskPriorityEnum.default("medium"),
   status: taskStatusEnum.default("todo"),
-  dueDate: z.iso.datetime().optional(),
-  startDate: z.iso.datetime().optional(),
-  completedAt: z.iso.datetime().optional(),
+  dueDate: z.iso.datetime().optional().nullable(),
+  startDate: z.iso.datetime().optional().nullable(),
+  completedAt: z.iso.datetime().optional().nullable(),
 
   projectId: z.cuid({ error: "Invalid Project Id" }),
-  assigneeId: z.cuid({ error: "Invalid Assignee Id" }),
+  assigneeId: z.cuid({ error: "Invalid Assignee Id" }).optional().nullable(),
   ownerId: z.cuid({ error: "Invalid Owner Id" }),
 });
 export type createTaskInput = z.infer<typeof createTaskSchema>;

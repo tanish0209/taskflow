@@ -1,12 +1,22 @@
+// src/app/api/tasks/route.ts
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 import { requireRole } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 import { createTaskSchema } from "@/schemas/task.schema";
 import { taskService } from "@/services/task.service";
-import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { getToken } from "next-auth/jwt";
 
 export async function POST(req: NextRequest) {
   try {
-    await requireRole(["manager", "team_lead"]);
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    console.log("Token in API route:", token);
+
+    if (!token?.role) throw new Error("Unauthorized");
+    if (!["manager", "team_lead"].includes(token.role))
+      throw new Error("Forbidden");
+
     const body = await req.json();
     const validatedData = createTaskSchema.parse(body);
 
@@ -15,12 +25,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, data: task }, { status: 201 });
   } catch (error) {
     console.error(error);
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { success: false, errors: error.issues },
         { status: 400 }
       );
     }
+
     const err = error as Error;
     return NextResponse.json(
       { success: false, message: err.message || "Failed to create task" },

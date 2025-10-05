@@ -95,6 +95,8 @@ export default function TasksPage() {
                     priority={task.priority}
                     employeeId={userId}
                     onStatusChange={updateStatus}
+                    role="employee"
+                    taskLink={`/dashboard/employee/${userId}/tasks/${task.id}`}
                   />
                 ))
               ) : (

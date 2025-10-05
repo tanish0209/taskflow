@@ -3,7 +3,7 @@
 import OverviewCard from "@/components/ui/OverviewCard";
 import UpcomingCard from "@/components/ui/UpcomingCard";
 import axios from "axios";
-import { CalendarX2, Check, Clock, ListChecks, Users } from "lucide-react";
+import { CalendarX2, Check, Clock, ListChecks } from "lucide-react";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
@@ -14,9 +14,9 @@ type Task = {
   status: "todo" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high";
   dueDate: string;
+  assigneeId: string;
+  ownerId: string;
   projectId: string;
-  assignedBy: string;
-  assignedTo: string;
 };
 
 type Project = {
@@ -28,59 +28,56 @@ type Project = {
   tasks?: Task[];
 };
 
-export default function TeamLeadDashboardPage() {
+export default function TeamLeadDashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [teamTasks, setTeamTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  const [teamLeadId, setTeamLeadId] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const session = await getSession();
-        if (!session?.user) return;
+      const session = await getSession();
+      if (!session?.user) return;
+      const id = session.user.id;
+      setUserId(id);
 
-        const userId = session.user.id;
-        setTeamLeadId(userId);
+      // Fetch tasks assigned to team lead
+      const myTasksRes = await axios.get(`/api/tasks/user/${id}`);
+      const myTasks: Task[] = myTasksRes.data.data || [];
 
-        // Fetch projects where team lead is a member
-        const projectsRes = await axios.get(`/api/projects/user/${userId}`);
-        const projectsData: Project[] = projectsRes.data.data || [];
-        setProjects(projectsData);
+      // Fetch tasks assigned by team lead
+      const assignedTasksRes = await axios.get(`/api/tasks/owner/${id}`);
+      const assignedTasks: Task[] = assignedTasksRes.data.data || [];
 
-        // Collect tasks from all projects
-        setTasks(projectsData.flatMap((p) => p.tasks || []));
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      }
+      // Fetch projects where team lead is a member
+      const projectsRes = await axios.get(`/api/projects/user/${id}`);
+      const projectsData: Project[] = projectsRes.data.data || [];
+
+      setTasks(myTasks);
+      setTeamTasks(assignedTasks);
+      setProjects(projectsData);
     };
 
     fetchData();
   }, []);
 
-  // Team lead–specific stats
-  const tasksAssignedByMe = tasks.filter((t) => t.assignedBy === teamLeadId);
-  const tasksAssignedToMe = tasks.filter((t) => t.assignedTo === teamLeadId);
-  const tasksCompletedByMe = tasksAssignedToMe.filter(
-    (t) => t.status === "done"
-  );
-  const tasksNotStartedByMe = tasksAssignedToMe.filter(
-    (t) => t.status === "todo"
-  );
+  // Overview counts
+  const tasksAssignedToMe = tasks.length;
+  const tasksAssignedByMe = teamTasks.length;
+  const completedTasksByMe = tasks.filter((t) => t.status === "done").length;
+  const todoTasksByMe = tasks.filter((t) => t.status === "todo").length;
 
-  const upcomingTasks = [...tasksAssignedToMe].sort(
+  const upcomingTasks = [...tasks, ...teamTasks].sort(
     (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
   );
 
-  const formatDueDate = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString("en-US", {
+  const formatDueDate = (isoString: string) =>
+    new Date(isoString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
 
   return (
     <div className="space-y-8">
@@ -90,10 +87,10 @@ export default function TeamLeadDashboardPage() {
           <h2 className="text-xl font-bold mb-4">Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <OverviewCard
-              title="Assigned by Me"
-              value={tasksAssignedByMe.length}
-              description="Tasks you have assigned to employees"
-              icon={<Users className="w-5 h-5 text-white" />}
+              title="Tasks Assigned to Me"
+              value={tasksAssignedToMe}
+              description="Tasks assigned to you"
+              icon={<ListChecks className="w-5 h-5 text-white" />}
               bgColor="bg-orange-500"
               chipColor="bg-orange-700"
               chiptextColor="text-white"
@@ -102,27 +99,27 @@ export default function TeamLeadDashboardPage() {
             />
 
             <OverviewCard
-              title="Assigned to Me"
-              value={tasksAssignedToMe.length}
-              description="Tasks assigned directly to you"
-              icon={<ListChecks className="w-5 h-5 text-blue-600" />}
+              title="Tasks Assigned by Me"
+              value={tasksAssignedByMe}
+              description="Tasks assigned by you to your team"
+              icon={<ListChecks className="w-5 h-5 text-blue-500" />}
               chipColor="bg-blue-200"
-              chiptextColor="text-blue-600"
+              chiptextColor="text-blue-500"
             />
 
             <OverviewCard
-              title="Completed by Me"
-              value={tasksCompletedByMe.length}
-              description="Tasks you’ve finished"
+              title="Completed Tasks"
+              value={completedTasksByMe}
+              description="Tasks you have finished"
               icon={<Check className="w-5 h-5 text-green-600" />}
               chipColor="bg-green-200"
               chiptextColor="text-green-600"
             />
 
             <OverviewCard
-              title="Yet to Start"
-              value={tasksNotStartedByMe.length}
-              description="Tasks not started yet"
+              title="Todo Tasks"
+              value={todoTasksByMe}
+              description="Tasks yet to start"
               icon={<CalendarX2 className="w-5 h-5 text-yellow-500" />}
               chipColor="bg-yellow-200"
               chiptextColor="text-yellow-500"
@@ -139,7 +136,7 @@ export default function TeamLeadDashboardPage() {
               value={selectedDate}
               tileClassName={({ date }) => {
                 const formatted = date.toISOString().split("T")[0];
-                const taskDue = tasksAssignedToMe.find(
+                const taskDue = [...tasks, ...teamTasks].find(
                   (t) => t.dueDate === formatted
                 );
                 return taskDue ? "bg-orange-200 rounded-full" : "";
@@ -149,11 +146,11 @@ export default function TeamLeadDashboardPage() {
         </div>
       </div>
 
-      {/* Upcoming Tasks */}
+      {/* Team Tasks Section */}
       <section className="border border-gray-200 p-6 rounded-2xl bg-white">
-        <h2 className="text-xl font-bold mb-4">Upcoming Tasks</h2>
+        <h2 className="text-xl font-bold mb-4">Tasks Assigned to Team</h2>
         <ul className="flex space-x-3 overflow-x-auto">
-          {upcomingTasks.map((task) => (
+          {teamTasks.map((task) => (
             <UpcomingCard
               key={task.id}
               chiptext={
@@ -213,10 +210,10 @@ export default function TeamLeadDashboardPage() {
 
       {/* Projects Section */}
       <section className="border rounded-2xl bg-white p-6 border-gray-200">
-        <h2 className="text-xl font-bold mb-6">Projects I’m a Member Of</h2>
+        <h2 className="text-xl font-bold mb-6">Projects</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {projects.map((project) => {
-            const projectTasks = tasks.filter(
+            const projectTasks = [...tasks, ...teamTasks].filter(
               (t) => t.projectId === project.id
             );
             const completedCount = projectTasks.filter(
@@ -234,17 +231,19 @@ export default function TeamLeadDashboardPage() {
               >
                 <div className="flex justify-between">
                   <h3 className="text-2xl font-bold">{project.name}</h3>
-                  <span
-                    className={`px-3 py-2 rounded-full text-sm font-medium ${
-                      project.status === "active"
-                        ? "text-green-600 bg-green-200"
-                        : project.status === "archived"
-                        ? "text-gray-500 bg-gray-200"
-                        : "text-blue-600 bg-blue-200"
-                    }`}
-                  >
-                    {project.status}
-                  </span>
+                  <p className="text-sm font-medium">
+                    <span
+                      className={
+                        project.status === "active"
+                          ? "text-green-600 bg-green-200 px-3 py-2 rounded-full"
+                          : project.status === "archived"
+                          ? "text-gray-500 bg-gray-200 px-3 py-2 rounded-full"
+                          : "text-blue-600 bg-blue-200 px-3 py-2 rounded-full"
+                      }
+                    >
+                      {project.status}
+                    </span>
+                  </p>
                 </div>
 
                 <p className="text-lg text-gray-600 font-semibold">
