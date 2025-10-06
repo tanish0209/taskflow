@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import axios from "axios";
@@ -46,6 +45,7 @@ export default function ManageTasksPage() {
     status: "todo",
     description: "",
     tags: "",
+    dueDate: "",
   });
 
   useEffect(() => {
@@ -106,13 +106,9 @@ export default function ManageTasksPage() {
     newStatus: Task["status"]
   ) => {
     try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+      const res = await axios.patch(`/api/tasks/${taskId}`, {
+        status: newStatus,
       });
-      if (!res.ok) throw new Error("Failed to update status");
-
       setTasks((prev) =>
         prev.map((task) =>
           task.id === taskId ? { ...task, status: newStatus } : task
@@ -163,6 +159,9 @@ export default function ManageTasksPage() {
         tags: formData.tags
           ? formData.tags.split(",").map((t) => t.trim())
           : [],
+        dueDate: formData.dueDate
+          ? new Date(formData.dueDate).toISOString()
+          : null,
       });
 
       setShowForm(false);
@@ -174,6 +173,7 @@ export default function ManageTasksPage() {
         status: "todo",
         description: "",
         tags: "",
+        dueDate: "",
       });
 
       await fetchAssignedTasks();
@@ -296,6 +296,15 @@ export default function ManageTasksPage() {
               <option value="review">Review</option>
               <option value="done">Done</option>
             </select>
+            <input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, dueDate: e.target.value }))
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+              placeholder="Due Date"
+            />
 
             <textarea
               placeholder="Description (optional)"
