@@ -26,6 +26,7 @@ type Project = {
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
 
   const updateStatus = async (taskId: string, newStatus: Task["status"]) => {
@@ -57,6 +58,8 @@ export default function TasksPage() {
         setTasks(tasksArr);
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -70,44 +73,66 @@ export default function TasksPage() {
     <div className="p-6 space-y-8 border border-gray-200 bg-white rounded-2xl">
       <h1 className="text-2xl font-bold">My Tasks</h1>
 
-      {projects.map((project) => {
-        const projectTasks = tasks.filter((t) => t.projectId === project.id);
-
-        return (
-          <div
-            key={project.id}
-            className="space-y-4 p-6 border border-gray-200 rounded-2xl "
-          >
-            <h2 className="text-2xl font-bold text-orange-600">
-              Project: {project.name}
-            </h2>
-
-            <div className="flex flex-wrap gap-4">
-              {projectTasks.length > 0 ? (
-                projectTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    taskId={task.id}
-                    title={task.title}
-                    projectName={project.name}
-                    dueDate={task.dueDate}
-                    status={task.status}
-                    priority={task.priority}
-                    employeeId={userId}
-                    onStatusChange={updateStatus}
-                    role="employee"
-                    taskLink={`/dashboard/employee/${userId}/tasks/${task.id}`}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500 italic">
-                  No tasks yet for this project
-                </p>
-              )}
+      {loading ? (
+        // 🔹 Skeleton Loader
+        <div className="space-y-6">
+          {[...Array(3)].map((_, idx) => (
+            <div
+              key={idx}
+              className="space-y-4 p-6 border border-gray-200 rounded-2xl animate-pulse"
+            >
+              <div className="h-6 w-1/3 bg-gray-300 rounded"></div>
+              <div className="flex flex-wrap gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-60 h-32 bg-gray-300 rounded-xl"
+                  ></div>
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      ) : (
+        projects.map((project) => {
+          const projectTasks = tasks.filter((t) => t.projectId === project.id);
+
+          return (
+            <div
+              key={project.id}
+              className="space-y-4 px-2 py-6 border border-gray-200 rounded-2xl"
+            >
+              <h2 className="text-2xl font-bold text-orange-600">
+                Project: {project.name}
+              </h2>
+
+              <div className="flex flex-wrap gap-4">
+                {projectTasks.length > 0 ? (
+                  projectTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      taskId={task.id}
+                      title={task.title}
+                      projectName={project.name}
+                      dueDate={task.dueDate}
+                      status={task.status}
+                      priority={task.priority}
+                      employeeId={userId}
+                      onStatusChange={updateStatus}
+                      role="employee"
+                      taskLink={`/dashboard/employee/${userId}/tasks/${task.id}`}
+                    />
+                  ))
+                ) : (
+                  <p className="text-gray-500 italic">
+                    No tasks yet for this project
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }

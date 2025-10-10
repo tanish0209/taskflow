@@ -20,12 +20,20 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const users = await userService.getUsers();
+    const { searchParams } = new URL(req.url);
+
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
+
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+    const limit = limitParam ? parseInt(limitParam, 10) : 10;
+
+    const users = await userService.getUsers(page, limit);
     return NextResponse.json(users, { status: 200 });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json(
       { success: false, message: "An unexpected error occurred." },
       { status: 500 }

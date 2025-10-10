@@ -19,6 +19,8 @@ import {
   UserCog,
   SquareKanban,
   BellRing,
+  Menu,
+  X,
 } from "lucide-react";
 import NotificationBell from "@/components/ui/Notifications";
 
@@ -30,6 +32,7 @@ const DashboardLayout = ({ children }: Props) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [profileExpanded, setProfileExpanded] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -38,7 +41,23 @@ const DashboardLayout = ({ children }: Props) => {
     }
   }, [session, status, router]);
 
-  if (status === "loading") return <p>Loading...</p>;
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-6">
+        <div className="flex space-x-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="w-10 h-10 bg-gray-300 rounded-xl animate-pulse"
+              style={{ animationDelay: `${i * 0.2}s` }}
+            ></div>
+          ))}
+        </div>
+        <p className="text-gray-700 font-bold text-2xl">Loading...</p>
+      </div>
+    );
+  }
+
   if (!session) return null;
 
   const role = session.user.role;
@@ -107,8 +126,16 @@ const DashboardLayout = ({ children }: Props) => {
         label: "Join Requests",
         icon: UserPlus,
       },
-      { href: "/dashboard/members", label: "Project Members", icon: Users },
-      { href: "/dashboard/reports", label: "Reports", icon: SquareActivity },
+      {
+        href: `/dashboard/${role}/${id}/members`,
+        label: "Project Members",
+        icon: Users,
+      },
+      {
+        href: `/dashboard/${role}/${id}/reports`,
+        label: "Reports",
+        icon: SquareActivity,
+      },
       {
         href: `/dashboard/${role}/${id}/calendar`,
         label: "Calendar",
@@ -133,17 +160,35 @@ const DashboardLayout = ({ children }: Props) => {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-72 bg-orange-600 opacity-90 text-white flex flex-col justify-between rounded-r-4xl">
+      <aside
+        className={`${
+          sidebarOpen ? "w-72" : "w-20"
+        } bg-orange-600 opacity-90 text-white flex flex-col justify-between rounded-r-4xl transition-all duration-75`}
+      >
         <div>
-          <div className="border-b border-orange-800 flex p-4 items-center">
-            <Link
-              href="/"
-              className="py-2 px-4 text-2xl font-bold rounded-full text-black bg-amber-100 flex"
+          <div className="border-b border-orange-800 flex p-4 items-center justify-between">
+            {sidebarOpen && (
+              <Link
+                href="/"
+                className="py-2 px-4 text-2xl font-bold rounded-full text-black bg-amber-100 flex"
+              >
+                Taskflow
+                <span className="text-2xl font-bold text-orange-700">.</span>
+              </Link>
+            )}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="ml-auto p-2 text-white hover:bg-orange-700 rounded-full"
             >
-              Taskflow
-              <span className="text-2xl font-bold text-orange-700">.</span>
-            </Link>
+              {sidebarOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
           </div>
+
+          {/* Common Links */}
           <nav className="p-4 space-y-2">
             {commonLinks.map((link) => {
               const Icon = link.icon;
@@ -154,21 +199,24 @@ const DashboardLayout = ({ children }: Props) => {
                   className="flex items-center gap-3 px-3 py-2 rounded-full font-medium hover:bg-orange-700 duration-300"
                 >
                   <Icon className="w-5 h-5" />
-                  {link.label}
+                  {sidebarOpen && link.label}
                 </Link>
               );
             })}
           </nav>
 
+          {/* Role Links */}
           {roleLinks[role]?.length > 0 && (
             <div className="p-4">
-              <h2 className="text-sm uppercase text-orange-200 font-bold mb-2">
-                {role === "admin"
-                  ? "Admin Panel"
-                  : role === "manager"
-                  ? "Manager Tools"
-                  : "Team Lead Tools"}
-              </h2>
+              {sidebarOpen && (
+                <h2 className="text-sm uppercase text-orange-200 font-bold mb-2">
+                  {role === "admin"
+                    ? "Admin Panel"
+                    : role === "manager"
+                    ? "Manager Tools"
+                    : "Team Lead Tools"}
+                </h2>
+              )}
               <nav className="space-y-2">
                 {roleLinks[role].map((link) => {
                   const Icon = link.icon;
@@ -179,7 +227,7 @@ const DashboardLayout = ({ children }: Props) => {
                       className="flex items-center gap-3 px-3 py-2 rounded-full font-bold hover:bg-orange-700 duration-300"
                     >
                       <Icon className="w-5 h-5" />
-                      {link.label}
+                      {sidebarOpen && link.label}
                     </Link>
                   );
                 })}
@@ -188,6 +236,7 @@ const DashboardLayout = ({ children }: Props) => {
           )}
         </div>
 
+        {/* Profile Section */}
         <div className="p-4 border-t border-orange-800">
           <div
             className="flex items-center cursor-pointer"
@@ -196,19 +245,35 @@ const DashboardLayout = ({ children }: Props) => {
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-amber-200 text-orange-800 font-bold">
               {session?.user?.name?.charAt(0).toUpperCase()}
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium">{session?.user?.name}</p>
-              <p className="text-xs text-gray-200 capitalize">{role}</p>
-            </div>
-            <ChevronUp
-              className={`ml-auto w-5 h-5 transition-transform ${
-                profileExpanded ? "rotate-180" : ""
-              }`}
-            />
+            {sidebarOpen && (
+              <>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{session?.user?.name}</p>
+                  <p className="text-xs text-gray-200 capitalize">
+                    {role === "team_lead"
+                      ? "Team Lead"
+                      : role === "employee"
+                      ? "Employee"
+                      : role === "manager"
+                      ? "Manager"
+                      : "Admin"}
+                  </p>
+                </div>
+                <ChevronUp
+                  className={`ml-auto w-5 h-5 transition-transform ${
+                    profileExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              </>
+            )}
           </div>
 
-          {profileExpanded && (
-            <div className="mt-2 space-y-1">
+          <div
+            className={`overflow-hidden transition-all duration-300 ${
+              profileExpanded && sidebarOpen ? "max-h-40 mt-2" : "max-h-0"
+            }`}
+          >
+            <div className="space-y-1">
               <Link
                 href="/dashboard/settings"
                 className="block text-sm p-2 hover:bg-orange-700 rounded"
@@ -218,7 +283,7 @@ const DashboardLayout = ({ children }: Props) => {
               <button
                 onClick={() =>
                   signOut({
-                    callbackUrl: "/login", // redirect to login after logout
+                    callbackUrl: "/login",
                     redirect: true,
                   })
                 }
@@ -227,10 +292,11 @@ const DashboardLayout = ({ children }: Props) => {
                 Logout
               </button>
             </div>
-          )}
+          </div>
         </div>
       </aside>
 
+      {/* Main Content */}
       <main className="flex-1 bg-gray-50 flex flex-col overflow-y-auto">
         <header className="flex items-center justify-between bg-white shadow px-6 py-3">
           <div>

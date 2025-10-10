@@ -3,7 +3,7 @@
 import OverviewCard from "@/components/ui/OverviewCard";
 import UpcomingCard from "@/components/ui/UpcomingCard";
 import axios from "axios";
-import { CalendarX2, Check, Clock, ListChecks } from "lucide-react";
+import { CalendarX2, Check, ListChecks } from "lucide-react";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
@@ -34,29 +34,30 @@ export default function TeamLeadDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [userId, setUserId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const session = await getSession();
-      if (!session?.user) return;
-      const id = session.user.id;
-      setUserId(id);
+      try {
+        const session = await getSession();
+        if (!session?.user) return;
+        const id = session.user.id;
+        setUserId(id);
 
-      // Fetch tasks assigned to team lead
-      const myTasksRes = await axios.get(`/api/tasks/user/${id}`);
-      const myTasks: Task[] = myTasksRes.data.data || [];
+        const [myTasksRes, assignedTasksRes, projectsRes] = await Promise.all([
+          axios.get(`/api/tasks/user/${id}`),
+          axios.get(`/api/tasks/owner/${id}`),
+          axios.get(`/api/projects/user/${id}`),
+        ]);
 
-      // Fetch tasks assigned by team lead
-      const assignedTasksRes = await axios.get(`/api/tasks/owner/${id}`);
-      const assignedTasks: Task[] = assignedTasksRes.data.data || [];
-
-      // Fetch projects where team lead is a member
-      const projectsRes = await axios.get(`/api/projects/user/${id}`);
-      const projectsData: Project[] = projectsRes.data.data || [];
-
-      setTasks(myTasks);
-      setTeamTasks(assignedTasks);
-      setProjects(projectsData);
+        setTasks(myTasksRes.data.data || []);
+        setTeamTasks(assignedTasksRes.data.data || []);
+        setProjects(projectsRes.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -68,10 +69,6 @@ export default function TeamLeadDashboard() {
   const completedTasksByMe = tasks.filter((t) => t.status === "done").length;
   const todoTasksByMe = tasks.filter((t) => t.status === "todo").length;
 
-  const upcomingTasks = [...tasks, ...teamTasks].sort(
-    (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-  );
-
   const formatDueDate = (isoString: string) =>
     new Date(isoString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -79,6 +76,57 @@ export default function TeamLeadDashboard() {
       day: "numeric",
     });
 
+  // --- Skeletons ---
+  if (loading) {
+    return (
+      <div className="space-y-8 animate-pulse">
+        {/* Overview Skeleton */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-4">
+          <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-4">
+            <div className="h-6 w-32 bg-gray-200 rounded" />
+            <div className="grid grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-24 bg-gray-200 rounded-lg shadow-sm"
+                />
+              ))}
+            </div>
+          </div>
+          {/* Calendar Skeleton */}
+          <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-4">
+            <div className="h-6 w-32 bg-gray-200 rounded" />
+            <div className="h-64 bg-gray-200 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Team Tasks Skeleton */}
+        <section className="border border-gray-200 p-6 rounded-2xl bg-white">
+          <div className="h-6 w-40 bg-gray-200 mb-4 rounded" />
+          <div className="flex space-x-3 overflow-x-auto">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-28 w-48 bg-gray-200 rounded-lg flex-shrink-0"
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Projects Skeleton */}
+        <section className="border border-gray-200 p-6 rounded-2xl bg-white">
+          <div className="h-6 w-32 bg-gray-200 mb-6 rounded" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="p-6 bg-gray-200 h-40 rounded-lg" />
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // --- Main Dashboard ---
   return (
     <div className="space-y-8">
       {/* Overview Section */}
@@ -97,7 +145,6 @@ export default function TeamLeadDashboard() {
               countColor="text-white"
               subtextColor="text-white"
             />
-
             <OverviewCard
               title="Tasks Assigned by Me"
               value={tasksAssignedByMe}
@@ -106,7 +153,6 @@ export default function TeamLeadDashboard() {
               chipColor="bg-blue-200"
               chiptextColor="text-blue-500"
             />
-
             <OverviewCard
               title="Completed Tasks"
               value={completedTasksByMe}
@@ -115,7 +161,6 @@ export default function TeamLeadDashboard() {
               chipColor="bg-green-200"
               chiptextColor="text-green-600"
             />
-
             <OverviewCard
               title="Todo Tasks"
               value={todoTasksByMe}

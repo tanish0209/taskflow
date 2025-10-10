@@ -9,6 +9,12 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "User ID is required." },
+        { status: 400 }
+      );
+    }
     const user = await userService.getUserById(id);
     return NextResponse.json({ success: true, data: user }, { status: 200 });
   } catch (error: unknown) {
@@ -20,12 +26,19 @@ export async function GET(
     }
 
     const err = error as Error;
+    const status =
+      err.message === "User not found"
+        ? 404
+        : err.message.includes("Invalid ID format")
+        ? 400
+        : 500;
+
     return NextResponse.json(
       {
         success: false,
         message: err.message || "An unexpected error occurred.",
       },
-      { status: 500 }
+      { status }
     );
   }
 }

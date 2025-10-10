@@ -55,7 +55,18 @@ export default function TeamLeadTasksPage() {
   };
 
   if (loading) {
-    return <p className="text-center py-10 text-gray-500">Loading tasks...</p>;
+    return (
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-6">
+        {Array(6)
+          .fill(0)
+          .map((_, idx) => (
+            <div
+              key={idx}
+              className="h-40 rounded-xl bg-gray-200 animate-pulse"
+            />
+          ))}
+      </div>
+    );
   }
 
   if (tasks.length === 0) {

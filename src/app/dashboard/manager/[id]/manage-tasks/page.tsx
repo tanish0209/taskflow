@@ -139,11 +139,12 @@ export default function ManageTasksPage() {
       );
       const allMembers = res.data?.data || [];
 
-      const filteredMembers: User[] = allMembers
-        .filter((m) => m.user.id !== userId)
-        .map((m) => ({ id: m.user.id, name: m.user.name }));
+      const all: User[] = allMembers.map((m) => ({
+        id: m.user.id,
+        name: m.user.name,
+      }));
 
-      setMembers(filteredMembers);
+      setMembers(all);
     } catch (err) {
       console.error("Failed to fetch project members:", err);
       setMembers([]);
@@ -188,35 +189,6 @@ export default function ManageTasksPage() {
     } catch (err) {
       console.error("Failed to add task:", err);
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Manage Assigned Tasks</h1>
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {Array(6)
-            .fill(0)
-            .map((_, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col w-full bg-white p-6 rounded-xl border border-gray-200 animate-pulse"
-              >
-                <div className="h-6 w-3/4 bg-gray-200 rounded mb-4" />
-                <div className="h-4 w-1/2 bg-gray-200 rounded mb-2" />
-                <div className="h-4 w-1/3 bg-gray-200 rounded mb-4" />
-
-                <div className="flex gap-2 mt-auto">
-                  <div className="h-8 w-16 bg-gray-200 rounded" />
-                  <div className="h-8 w-16 bg-gray-200 rounded" />
-                </div>
-
-                <div className="mt-4 h-6 w-2/3 bg-gray-200 rounded self-center" />
-              </div>
-            ))}
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -380,7 +352,18 @@ export default function ManageTasksPage() {
       )}
 
       {/* Tasks List */}
-      {tasks.length === 0 ? (
+      {loading ? (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {Array(5)
+            .fill(0)
+            .map((_, idx) => (
+              <div
+                key={idx}
+                className="w-64 h-40 bg-gray-200 animate-pulse rounded-xl"
+              />
+            ))}
+        </div>
+      ) : tasks.length === 0 ? (
         <p className="text-gray-500">
           You have not assigned any tasks to employees yet.
         </p>
@@ -396,9 +379,9 @@ export default function ManageTasksPage() {
                 employeeId={userId || ""}
                 status={task.status}
                 priority={task.priority}
-                role="team_lead"
+                role="manager"
                 onStatusChange={handleStatusChange}
-                taskLink={`/dashboard/team_lead/${userId}/manage-tasks/${task.id}`}
+                taskLink={`/dashboard/manager/${userId}/manage-tasks/${task.id}`}
               />
               <p className="mt-2 py-2 px-2 bg-white rounded-xl text-sm font-bold text-orange-600 border text-center border-gray-200">
                 Assigned to:{" "}

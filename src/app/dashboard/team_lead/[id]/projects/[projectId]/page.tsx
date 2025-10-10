@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
-import { useSession } from "next-auth/react"; // 👈 to get logged in team lead
+import { useSession } from "next-auth/react";
 import TaskCard from "@/components/ui/TaskCard";
 
 interface TaskTag {
@@ -46,6 +46,26 @@ interface Project {
   updatedAt: string;
   tasks: Task[];
 }
+function ProjectInfoSkeleton() {
+  return (
+    <div className="space-y-3 animate-pulse">
+      <div className="h-8 w-1/3 bg-gray-300 rounded"></div>
+      <div className="h-4 w-2/3 bg-gray-200 rounded"></div>
+      <div className="h-4 w-1/4 bg-gray-200 rounded"></div>
+      <div className="h-4 w-1/4 bg-gray-200 rounded"></div>
+    </div>
+  );
+}
+
+function TaskCardSkeleton() {
+  return (
+    <div className="animate-pulse p-4 border border-gray-200 rounded-lg bg-white shadow">
+      <div className="h-6 w-2/3 bg-gray-300 rounded mb-3"></div>
+      <div className="h-4 w-1/2 bg-gray-200 rounded mb-2"></div>
+      <div className="h-3 w-1/4 bg-gray-200 rounded"></div>
+    </div>
+  );
+}
 
 export default function ProjectPage() {
   const { projectId } = useParams() as { projectId: string };
@@ -73,7 +93,22 @@ export default function ProjectPage() {
     }
   }, [projectId, status]);
 
-  if (loading) return <div>Loading project details...</div>;
+  if (loading) {
+    return (
+      <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6">
+        {/* Project Info Skeleton */}
+        <ProjectInfoSkeleton />
+
+        {/* Task Skeletons */}
+        <h2 className="text-xl font-semibold mt-4">Tasks</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TaskCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (!project) return <div>Project not found</div>;
 
   const { tasks, description } = project;

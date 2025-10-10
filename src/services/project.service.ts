@@ -5,89 +5,99 @@ import {
   UpdateProjectInput,
   updateProjectSchema,
 } from "@/schemas/project.schema";
+
 export const ProjectService = {
   async createProject(data: CreateProjectInput) {
-    const ValidatedData = createProjectSchema.parse(data);
+    const validatedData = createProjectSchema.parse(data);
 
     const existingProject = await prisma.project.findFirst({
       where: {
-        name: ValidatedData.name,
-        ownerId: ValidatedData.ownerId,
+        name: validatedData.name,
+        ownerId: validatedData.ownerId,
       },
     });
     if (existingProject)
       throw new Error("Project with this name already exists for this user");
-    const newProject = await prisma.project.create({
-      data: ValidatedData,
+
+    return prisma.project.create({
+      data: validatedData,
+      include: {
+        tasks: true,
+        attachments: true,
+        projectMember: true,
+        activityLogs: true,
+        owner: true,
+      },
     });
-    return newProject;
   },
+
   async getAllProjects() {
     return prisma.project.findMany({
       include: {
-        owner: true,
-        projectMember: true,
         tasks: true,
+        attachments: true,
+        projectMember: true,
+        activityLogs: true,
+        owner: true,
       },
+      orderBy: { createdAt: "desc" },
     });
   },
 
   async getProjectsByUser(userId: string) {
     return prisma.project.findMany({
       where: {
-        projectMember: { some: { userId } },
+        OR: [{ ownerId: userId }, { projectMember: { some: { userId } } }],
       },
       include: {
         tasks: true,
+        attachments: true,
         projectMember: true,
+        activityLogs: true,
         owner: true,
       },
+      orderBy: { createdAt: "desc" },
     });
   },
 
   async getProjectById(id: string) {
-    const project = await prisma.project.findUnique({
+    return prisma.project.findUniqueOrThrow({
       where: { id },
       include: {
-        owner: true,
         tasks: true,
         attachments: true,
+        projectMember: true,
         activityLogs: true,
+        owner: true,
       },
     });
-    if (!project) throw new Error("Project not found");
-    return project;
   },
+
   async updateProject(data: UpdateProjectInput, id: string) {
-    const ValidatedData = updateProjectSchema.parse(data);
-    const existingProject = await prisma.project.findUnique({
-      where: { id },
-    });
-
-    if (!existingProject) {
+    const validatedData = updateProjectSchema.parse(data);
+    try {
+      return prisma.project.update({
+        where: { id },
+        data: validatedData,
+        include: {
+          tasks: true,
+          attachments: true,
+          projectMember: true,
+          activityLogs: true,
+          owner: true,
+        },
+      });
+    } catch {
       throw new Error("Project not found");
     }
-
-    const updatedProject = await prisma.project.update({
-      where: { id },
-      data: ValidatedData,
-    });
-
-    return updatedProject;
   },
-  async deleteProject(id: string) {
-    const existingProject = await prisma.project.findUnique({
-      where: { id },
-    });
 
-    if (!existingProject) {
+  async deleteProject(id: string) {
+    try {
+      await prisma.project.delete({ where: { id } });
+      return { message: "Project deleted successfully" };
+    } catch {
       throw new Error("Project not found");
     }
-
-    await prisma.project.delete({
-      where: { id },
-    });
-
-    return { message: "Project deleted successfully" };
   },
 };

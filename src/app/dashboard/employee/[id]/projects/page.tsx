@@ -64,16 +64,10 @@ export default function ProjectPage() {
 
     fetchProjects();
   }, [session]);
-  if (!session?.user) return <p>Loading...</p>;
-  const userId = session.user.id;
 
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading projects...</p>
-      </main>
-    );
-  }
+  if (!session?.user) return <p>Loading...</p>;
+
+  const userId = session.user.id;
 
   if (error) {
     return (
@@ -87,29 +81,40 @@ export default function ProjectPage() {
     <main className="min-h-screen bg-white rounded-2xl border border-gray-200 p-6">
       <h1 className="text-2xl font-bold mb-6">Project Overview</h1>
 
-      {projects.length === 0 ? (
+      {projects.length === 0 && !loading ? (
         <p className="text-gray-500">No projects found.</p>
       ) : (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              projectId={project.id}
-              employeeId={userId}
-              name={project.name}
-              role="employee"
-              description={project.description}
-              status={
-                project.status === "active"
-                  ? "Active"
-                  : project.status === "archived"
-                  ? "Archived"
-                  : "Completed"
-              }
-              owner={project.owner?.name || "N/A"}
-              progress={project.progress || 0}
-            />
-          ))}
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 ">
+          {loading
+            ? // Skeleton for 4 projects
+              Array(4)
+                .fill(0)
+                .map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="h-48 bg-gray-200 animate-pulse rounded-xl"
+                  />
+                ))
+            : // Actual project cards
+              projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  projectId={project.id}
+                  employeeId={userId}
+                  name={project.name}
+                  role="employee"
+                  description={project.description}
+                  status={
+                    project.status === "active"
+                      ? "Active"
+                      : project.status === "archived"
+                      ? "Archived"
+                      : "Completed"
+                  }
+                  owner={project.owner?.name || "N/A"}
+                  progress={project.progress || 0}
+                />
+              ))}
         </div>
       )}
     </main>

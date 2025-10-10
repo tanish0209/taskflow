@@ -7,7 +7,7 @@ interface ProjectCardProps {
   employeeId: string;
   projectId: string;
   status: string;
-  owner: string;
+  owner?: string;
   role: "employee" | "team_lead" | "manager" | "admin";
   progress: number;
 }
@@ -23,8 +23,17 @@ export default function ProjectCard({
   progress,
 }: ProjectCardProps) {
   const router = useRouter();
+  const handleNavigate = () => {
+    if (role === "employee" || role === "team_lead") {
+      router.push(`/dashboard/${role}/${employeeId}/projects/${projectId}`);
+    } else {
+      router.push(
+        `/dashboard/${role}/${employeeId}/manage-projects/${projectId}`
+      );
+    }
+  };
   return (
-    <div className="bg-white shadow-md rounded-2xl p-5 w-full max-w-sm border border-gray-200">
+    <div className="bg-white shadow-md rounded-2xl p-5 w-full border border-gray-200">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-bold text-gray-800">{name}</h2>
         <span
@@ -40,13 +49,15 @@ export default function ProjectCard({
         </span>
       </div>
       <div className="mb-4">
-        <p className="text-sm text-gray-600 h-16 overflow-hidden text-ellipsis">
+        <p className="text-sm text-gray-600 mb-2 overflow-hidden text-ellipsis">
           {description}
         </p>
 
-        <p className="text-sm text-gray-700 mt-2">
-          <span className="font-medium">Owner:</span> {owner}
-        </p>
+        {owner && (
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Owner:</span> {owner}
+          </p>
+        )}
       </div>
 
       <div>
@@ -62,9 +73,7 @@ export default function ProjectCard({
         </div>
       </div>
       <button
-        onClick={() =>
-          router.push(`/dashboard/${role}/${employeeId}/projects/${projectId}`)
-        }
+        onClick={handleNavigate}
         className="px-3 py-2 mt-3 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
       >
         Go to Project

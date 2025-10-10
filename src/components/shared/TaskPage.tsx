@@ -7,47 +7,51 @@ type TaskPriority = "low" | "medium" | "high";
 type TaskStatus = "todo" | "in_progress" | "review" | "done";
 type SubtaskStatus = "todo" | "done";
 
-interface Subtask {
+export interface Subtask {
   id: string;
   title: string;
   status: SubtaskStatus;
 }
 
-interface Comment {
+export interface Comment {
   id: string;
   content: string;
   author: { id: string; name: string };
   createdAt: string;
 }
 
-interface TaskTag {
-  id: string;
-  name: string;
+export interface TaskTag {
+  tag: {
+    id: string;
+    name: string;
+  };
+  tagId: string;
+  taskId: string;
 }
 
-interface Attachment {
+export interface Attachment {
   id: string;
   filename: string;
   url: string;
 }
 
-interface ActivityLog {
+export interface ActivityLog {
   id: string;
   description: string;
   createdAt: string;
 }
 
-interface Project {
+export interface Project {
   id: string;
   name: string;
 }
 
-interface User {
+export interface User {
   id: string;
   name: string;
 }
 
-interface Task {
+export interface Task {
   id: string;
   title: string;
   description?: string;
@@ -67,7 +71,7 @@ interface Task {
   activityLogs?: ActivityLog[];
 }
 
-interface TaskPageProps {
+export interface TaskPageProps {
   task: Task | null;
   attachments?: Attachment[];
   loading: boolean;
@@ -97,13 +101,56 @@ export default function TaskPage({
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
 
-  if (loading) return <div>Loading task details...</div>;
+  if (loading) {
+    return (
+      <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6 animate-pulse">
+        {/* Title & Description skeleton */}
+        <div>
+          <div className="h-16 w-1/3 bg-gray-200 rounded mb-2" />
+          <div className="h-8 w-2/3 bg-gray-200 rounded" />
+        </div>
+
+        {/* Tags skeleton */}
+        <div className="flex gap-2">
+          {Array(3)
+            .fill(0)
+            .map((_, i) => (
+              <div key={i} className="h-12 w-16 bg-gray-200 rounded-full" />
+            ))}
+        </div>
+
+        {/* Comments skeleton */}
+        <div className="space-y-3">
+          <div className="h-8 w-1/2 bg-gray-200 rounded" />
+          <div className="h-8 w-3/4 bg-gray-200 rounded" />
+          <div className="h-8 w-2/3 bg-gray-200 rounded" />
+        </div>
+
+        {/* Subtasks skeleton */}
+        <div className="flex gap-3">
+          {Array(2)
+            .fill(0)
+            .map((_, i) => (
+              <div key={i} className="h-8 w-24 bg-gray-200 rounded" />
+            ))}
+        </div>
+
+        {/* Attachments skeleton */}
+        <div className="space-y-2">
+          <div className="h-8 w-1/4 bg-gray-200 rounded" />
+          <div className="h-8 w-1/3 bg-gray-200 rounded" />
+        </div>
+      </div>
+    );
+  }
+
   if (!task) return <div>Task not found</div>;
 
   const subtasks = task.subtasks || [];
   const comments = task.comments || [];
   const activityLogs = task.activityLogs || [];
   const tags = task.tags || [];
+  console.log(task.tags);
 
   async function deleteTask() {
     if (!task?.id) return;
@@ -222,10 +269,10 @@ export default function TaskPage({
         {tags.length > 0 ? (
           tags.map((t) => (
             <span
-              key={t.id}
+              key={t.tag.id}
               className="px-2 py-1 bg-orange-200 rounded-full text-sm text-orange-600"
             >
-              {t.name || "Unnamed"}
+              {t.tag.name || "Unnamed"}
             </span>
           ))
         ) : (
