@@ -1,5 +1,11 @@
 "use client";
 import Navbar from "@/components/Navbar";
+import {
+  ChartNoAxesCombined,
+  Handshake,
+  Network,
+  Settings,
+} from "lucide-react";
 import Image from "next/image";
 
 export default function LandingPage() {
@@ -51,7 +57,7 @@ export default function LandingPage() {
         id="about"
         className="h-screen flex items-center justify-center bg-white"
       >
-        <div className="my-15 mx-15 bg-orange-400 px-5 py-20  rounded-4xl">
+        <div className="my-15 mx-15 bg-orange-400 px-5 py-15  rounded-4xl">
           <h4 className="text-orange-800 text-lg">See Taskflow in Action</h4>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <p className="text-black font-bold text-4xl">
@@ -64,6 +70,60 @@ export default function LandingPage() {
             </p>
           </div>
           <hr className="border-t border-orange-800 my-6" />
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+            <div className="flex gap-6 p-8">
+              <Network className=" size-10 scale-150 text-orange-800" />
+              <div>
+                <h2 className="text-2xl font-bold text-black">
+                  Seamless Workflow Orchestration
+                </h2>
+                <h5 className="text-md font-medium text-orange-800">
+                  Design and manage your team's workflow from start to finish.
+                  TaskFlow keeps every process connected, ensuring smooth task
+                  transitions & project flow.
+                </h5>
+              </div>
+            </div>
+            <div className="flex gap-6 p-8">
+              <Settings className=" size-10 scale-150 text-orange-800" />
+              <div>
+                <h2 className="text-2xl font-bold text-black">
+                  Quick Setup, Zero Hassle
+                </h2>
+                <h5 className="text-md font-medium text-orange-800">
+                  Get started in minutes - no complex onboarding or
+                  configuration. Create projects, invite teammates, and start
+                  collaborating instantly.
+                </h5>
+              </div>
+            </div>
+            <div className="flex gap-6 p-8">
+              <Handshake className=" size-10 scale-150 text-orange-800" />
+              <div>
+                <h2 className="text-2xl font-bold text-black">
+                  Effortless Team Collaboration
+                </h2>
+                <h5 className="text-md font-medium text-orange-800">
+                  Bring your team together with shared workspaces, live task
+                  updates, and transparent progress tracking - keeping everyone
+                  aligned and productive.
+                </h5>
+              </div>
+            </div>
+            <div className="flex gap-6 p-8">
+              <ChartNoAxesCombined className=" size-10 scale-150 text-orange-800" />
+              <div>
+                <h2 className="text-2xl font-bold text-black">
+                  Organized, Scalable Productivity
+                </h2>
+                <h5 className="text-md font-medium text-orange-800">
+                  Whether it’s a small team or a large project, TaskFlow adapts
+                  to your workflow - helping you scale operations while staying
+                  organized and efficient.
+                </h5>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

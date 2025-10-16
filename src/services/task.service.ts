@@ -5,7 +5,8 @@ import {
   updateTaskInput,
   updateTaskSchema,
 } from "@/schemas/task.schema";
-
+import { getIO } from "@/lib/socketServer";
+import { notificationService } from "./notification.service";
 export const taskService = {
   async createTask(data: createTaskInput) {
     const validatedData = createTaskSchema.parse(data);
@@ -30,8 +31,7 @@ export const taskService = {
       });
       if (!user) throw new Error("Owner does not exist");
     }
-
-    return prisma.task.create({
+    const task = await prisma.task.create({
       data: {
         ...validatedData,
         dueDate: validatedData.dueDate
@@ -49,6 +49,22 @@ export const taskService = {
         activityLogs: true,
       },
     });
+    if (
+      validatedData.assigneeId &&
+      validatedData.assigneeId !== validatedData.ownerId
+    ) {
+      await notificationService.createNotification({
+        type: "status_update",
+        message: `You have been assigned a new task:"${task.title}"`,
+        userId: validatedData.assigneeId,
+        isRead: false,
+      });
+    }
+    if (validatedData.projectId) {
+      const io = getIO();
+      io.to(`project_${validatedData.projectId}`).emit("task-created", task);
+    }
+    return task;
   },
 
   async getAllTasks() {
@@ -103,7 +119,7 @@ export const taskService = {
 
   async getTasksByOwner(userId: string) {
     return prisma.task.findMany({
-      where: { OR: [{ ownerId: userId }, { assigneeId: userId }] },
+      where: { OR: [{ ownerId: userId }] },
       include: {
         project: { select: { id: true, name: true } },
         assignee: { select: { id: true, name: true, email: true } },
@@ -148,8 +164,7 @@ export const taskService = {
     Object.keys(updateData).forEach(
       (key) => updateData[key] === undefined && delete updateData[key]
     );
-
-    return prisma.task.update({
+    const updatedTask = await prisma.task.update({
       where: { id },
       data: updateData,
       include: {
@@ -163,6 +178,56 @@ export const taskService = {
         activityLogs: true,
       },
     });
+    if (validatedData.status && validatedData.status !== existingTask.status) {
+      if (
+        existingTask.ownerId &&
+        existingTask.ownerId !== existingTask.assigneeId
+      ) {
+        await notificationService.createNotification({
+          type: "status_update",
+          message: `Task "${updatedTask.title}" status changed to ${validatedData.status}`,
+          userId: existingTask.ownerId,
+          isRead: false,
+        });
+      }
+      if (validatedData.status === "done" && existingTask.assigneeId) {
+        await notificationService.createNotification({
+          type: "status_update",
+          message: `Great job! Task "${updatedTask.title}" has been marked as complete`,
+          userId: existingTask.assigneeId,
+          isRead: false,
+        });
+      }
+    }
+    if (
+      validatedData.assigneeId &&
+      validatedData.assigneeId !== existingTask.assigneeId
+    ) {
+      await notificationService.createNotification({
+        type: "status_update",
+        message: `You have been assigned to task: "${updatedTask.title}"`,
+        userId: validatedData.assigneeId,
+        isRead: false,
+      });
+
+      if (existingTask.assigneeId) {
+        await notificationService.createNotification({
+          type: "status_update",
+          message: `You have been unassigned from task: "${updatedTask.title}"`,
+          userId: existingTask.assigneeId,
+          isRead: false,
+        });
+      }
+    }
+    const io = getIO();
+    io.to(`task_${id}`).emit("task-updated", updatedTask);
+    if (validatedData.projectId) {
+      io.to(`project_${validatedData.projectId}`).emit(
+        "task-updated",
+        updatedTask
+      );
+    }
+    return updatedTask;
   },
 
   async deleteTask(id: string) {
@@ -170,6 +235,22 @@ export const taskService = {
     if (!existingTask) throw new Error("Task not found");
 
     await prisma.task.delete({ where: { id } });
+    if (
+      existingTask.assigneeId &&
+      existingTask.assigneeId !== existingTask.ownerId
+    ) {
+      await notificationService.createNotification({
+        type: "status_update",
+        message: `Task "${existingTask.title}" has been deleted`,
+        userId: existingTask.assigneeId,
+        isRead: false,
+      });
+    }
+    const io = getIO();
+    io.to(`task_${id}`).emit("task-deleted", { id });
+    if (existingTask.projectId) {
+      io.to(`project_${existingTask.projectId}`).emit("task-deleted", { id });
+    }
     return { message: "Task deleted successfully" };
   },
 };

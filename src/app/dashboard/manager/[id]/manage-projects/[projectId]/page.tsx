@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import TaskCard from "@/components/ui/TaskCard";
+import { getSocket } from "@/lib/socket";
 
 interface TaskTag {
   id: string;
@@ -73,7 +74,41 @@ export default function ProjectPage() {
 
     if (status === "authenticated") fetchProject();
   }, [projectId, status]);
+  useEffect(() => {
+    if (!userId) return;
 
+    const socket = getSocket();
+    socket.emit("join-project", projectId);
+    socket.on("task-created", (task: Task) => {
+      setProject((prev) =>
+        prev ? { ...prev, tasks: [...prev.tasks, task] } : prev
+      );
+    });
+
+    socket.on("task-updated", (updatedTask: Task) => {
+      setProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              tasks: prev.tasks.map((t) =>
+                t.id === updatedTask.id ? updatedTask : t
+              ),
+            }
+          : prev
+      );
+    });
+
+    socket.on("task-deleted", (deletedTaskId: string) => {
+      setProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              tasks: prev.tasks.filter((t) => t.id !== deletedTaskId),
+            }
+          : prev
+      );
+    });
+  }, [projectId, userId]);
   const handleEditToggle = () => setEditMode((prev) => !prev);
 
   const handleSave = async () => {

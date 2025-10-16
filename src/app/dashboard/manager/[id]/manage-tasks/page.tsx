@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import axios from "axios";
 import TaskCard from "@/components/ui/TaskCard";
+import { getSocket } from "@/lib/socket";
 
 // --- Types ---
 interface User {
@@ -190,7 +191,28 @@ export default function ManageTasksPage() {
       console.error("Failed to add task:", err);
     }
   }
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on(
+      "task-updated",
+      (updatedTask: Task & { assigneeName: string }) => {
+        setTasks((prev) => {
+          const idx = prev.findIndex((t) => t.id === updatedTask.id);
+          if (idx > -1) {
+            const newTasks = [...prev];
+            newTasks[idx] = updatedTask;
+            return newTasks;
+          } else {
+            return [updatedTask, ...prev];
+          }
+        });
+      }
+    );
 
+    socket.on("task-deleted", (taskId: string) => {
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    });
+  }, []);
   return (
     <div className="p-6 space-y-6 bg-white border border-gray-200 rounded-2xl">
       <div className="flex items-center justify-between">
@@ -380,7 +402,6 @@ export default function ManageTasksPage() {
                 status={task.status}
                 priority={task.priority}
                 role="manager"
-                onStatusChange={handleStatusChange}
                 taskLink={`/dashboard/manager/${userId}/manage-tasks/${task.id}`}
               />
               <p className="mt-2 py-2 px-2 bg-white rounded-xl text-sm font-bold text-orange-600 border text-center border-gray-200">

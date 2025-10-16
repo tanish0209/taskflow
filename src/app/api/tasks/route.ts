@@ -1,14 +1,17 @@
 // src/app/api/tasks/route.ts
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { requireRole } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { ZodError } from "zod";
 import { createTaskSchema } from "@/schemas/task.schema";
 import { taskService } from "@/services/task.service";
+import { ZodError } from "zod";
+import { getToken } from "next-auth/jwt";
 
-// POST /api/tasks
 export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    console.log("Token in API route:", token);
 
     if (!token?.role) throw new Error("Unauthorized");
     if (!["manager", "team_lead"].includes(token.role))
@@ -22,12 +25,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, data: task }, { status: 201 });
   } catch (error) {
     console.error(error);
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { success: false, errors: error.issues },
         { status: 400 }
       );
     }
+
     const err = error as Error;
     return NextResponse.json(
       { success: false, message: err.message || "Failed to create task" },
@@ -36,28 +41,18 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/tasks
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const tasks = await taskService.getAllTasks();
     const mappedTasks = tasks.map((t) => ({
-      id: t.id,
-      title: t.title,
-      description: t.description,
-      priority: t.priority,
-      status: t.status,
-      project: t.project ? { id: t.project.id, name: t.project.name } : null,
+      ...t,
       owner: t.owner
         ? { id: t.owner.id, name: t.owner.name, email: t.owner.email }
         : null,
       assignee: t.assignee
         ? { id: t.assignee.id, name: t.assignee.name, email: t.assignee.email }
         : null,
-      dueDate: t.dueDate?.toISOString() || null,
-      startDate: t.startDate?.toISOString() || null,
-      completedAt: t.completedAt?.toISOString() || null,
-      createdAt: t.createdAt.toISOString(),
-      updatedAt: t.updatedAt.toISOString(),
+      project: t.project ? { id: t.project.id, name: t.project.name } : null,
     }));
 
     return NextResponse.json(

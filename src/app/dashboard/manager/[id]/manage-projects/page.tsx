@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import ProjectCard from "@/components/ui/ProjectCard";
+import { getSocket } from "@/lib/socket";
 
 type Task = {
   id: string;
@@ -40,7 +41,18 @@ export default function ManageProjectsPage() {
     };
 
     fetchProjects();
-  });
+    const socket = getSocket();
+    socket.on("project-created", (newProject: Project) => {
+      if (newProject.owner.id === userId) {
+        setProjects((prev) => [newProject, ...prev]);
+      }
+    });
+    socket.on("project-updated", (updatedProject: Project) => {
+      setProjects((prev) =>
+        prev.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+      );
+    });
+  }, [userId]);
   const ownedProjects = projects.filter((p) => p.owner.id === userId);
   if (loading) {
     return (

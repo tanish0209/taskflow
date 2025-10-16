@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getIO } from "@/lib/socketServer";
 import {
   createAttachmentInput,
   createAttachmentSchema,
@@ -27,7 +28,7 @@ export const attachmentService = {
       });
       if (!user) throw new Error("User who uploaded not found");
     }
-    return prisma.attachment.create({
+    const attachment = await prisma.attachment.create({
       data: ValidatedData,
       include: {
         task: { select: { id: true, title: true } },
@@ -35,6 +36,12 @@ export const attachmentService = {
         user: { select: { id: true, name: true, email: true } },
       },
     });
+    const io = getIO();
+    io.to(`task_${ValidatedData.taskId}`).emit(
+      "attachment-created",
+      attachment
+    );
+    return attachment;
   },
   async getAllAttachments() {
     return prisma.attachment.findMany({
@@ -70,8 +77,7 @@ export const attachmentService = {
       where: { id },
     });
     if (!existingAttachment) throw new Error("Attachment not found");
-
-    return prisma.attachment.update({
+    const attachment = await prisma.attachment.update({
       where: { id },
       data: validatedData,
       include: {
@@ -80,6 +86,12 @@ export const attachmentService = {
         user: { select: { id: true, name: true } },
       },
     });
+    const io = getIO();
+    io.to(`user_${validatedData.uploadedBy}`).emit(
+      "attachment-updated",
+      attachment
+    );
+    return attachment;
   },
   async deleteAttachment(id: string) {
     const existingAttachment = await prisma.attachment.findUnique({
@@ -88,6 +100,10 @@ export const attachmentService = {
     if (!existingAttachment) throw new Error("Attachment not found");
 
     await prisma.attachment.delete({ where: { id } });
+    const io = getIO();
+    io.to(`user_${existingAttachment.uploadedBy}`).emit("attachment-deleted", {
+      id,
+    });
     return { message: "Attachment deleted successfully" };
   },
 };

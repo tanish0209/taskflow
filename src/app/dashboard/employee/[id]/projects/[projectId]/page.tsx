@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import TaskCard from "@/components/ui/TaskCard";
+import { getSocket } from "@/lib/socket";
 
 interface TaskTag {
   id: string;
@@ -55,22 +56,54 @@ export default function ProjectPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProject = async () => {
+    try {
+      const res = await axios.get(`/api/projects/${projectId}`);
+      const data = res.data.data || res.data;
+      setProject(data);
+    } catch (err) {
+      console.error("Failed to fetch project:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const res = await axios.get(`/api/projects/${projectId}`);
-        const data = res.data.data || res.data;
-        setProject(data);
-      } catch (err) {
-        console.error("Failed to fetch project:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProject();
+    const socket = getSocket();
+    socket.emit("join-project", projectId);
+    socket.on("task-created", (newTask: Task) => {
+      setProject((prev) =>
+        prev ? { ...prev, tasks: [...(prev.tasks || []), newTask] } : prev
+      );
+    });
+    socket.on("task-updated", (updatedTask: Task) => {
+      setProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              tasks: (prev.tasks || []).map((task) =>
+                task.id === updatedTask.id ? updatedTask : task
+              ),
+            }
+          : prev
+      );
+    });
+
+    socket.on("task-deleted", (deletedTaskId: string) => {
+      setProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              tasks: (prev.tasks || []).filter(
+                (task) => task.id !== deletedTaskId
+              ),
+            }
+          : prev
+      );
+    });
   }, [projectId]);
 
-  // Skeleton Loader JSX
   const skeletonProjectInfo = (
     <div className="space-y-2 animate-pulse">
       <div className="h-10 w-1/2 bg-gray-200 rounded"></div>

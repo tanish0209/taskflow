@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import TaskCard from "@/components/ui/TaskCard";
+import { getSocket } from "@/lib/socket";
 
 interface TaskTag {
   id: string;
@@ -93,6 +94,40 @@ export default function ProjectPage() {
     }
   }, [projectId, status]);
 
+  useEffect(() => {
+    const socket = getSocket();
+    socket.emit("join-project", projectId);
+    socket.on("task-created", (task: Task) => {
+      setProject((prev) =>
+        prev ? { ...prev, tasks: [...prev.tasks, task] } : prev
+      );
+    });
+
+    socket.on("task-updated", (updatedTask: Task) => {
+      setProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              tasks: prev.tasks.map((t) =>
+                t.id === updatedTask.id ? updatedTask : t
+              ),
+            }
+          : prev
+      );
+    });
+
+    socket.on("task-deleted", (deletedId: string) => {
+      setProject((prev) =>
+        prev
+          ? { ...prev, tasks: prev.tasks.filter((t) => t.id !== deletedId) }
+          : prev
+      );
+    });
+
+    socket.on("project-updated", (updated: Project) => {
+      if (updated.id === projectId) setProject(updated);
+    });
+  }, [projectId]);
   if (loading) {
     return (
       <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6">
@@ -109,6 +144,7 @@ export default function ProjectPage() {
       </div>
     );
   }
+
   if (!project) return <div>Project not found</div>;
 
   const { tasks, description } = project;

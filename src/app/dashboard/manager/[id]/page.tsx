@@ -1,6 +1,7 @@
 "use client";
 import OverviewCard from "@/components/ui/OverviewCard";
 import UpcomingCard from "@/components/ui/UpcomingCard";
+import { getSocket } from "@/lib/socket";
 import axios from "axios";
 import { Check, ListChecks, LoaderCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -23,6 +24,7 @@ type Project = {
   description: string;
   status: "active" | "archived" | "completed";
   createdAt: string;
+  tasks?: Task[];
 };
 
 function ManagerDashboard() {
@@ -53,6 +55,21 @@ function ManagerDashboard() {
       }
     };
     fetchedData();
+    if (!session?.user) return;
+    const socket = getSocket();
+    const userId = session.user.id;
+    socket.emit("register-user", userId);
+    socket.on("task-assigned", (task: Task) => {
+      setTeamTasks((prev) => [...prev, task]);
+    });
+    socket.on("task-updated", (task: Task) => {
+      setTeamTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+    });
+    socket.on("project-updated", (project: Project) => {
+      setProjects((prev) =>
+        prev.map((p) => (p.id === project.id ? project : p))
+      );
+    });
   }, [session]);
 
   const tasksAssigned = teamTasks.length;
@@ -241,7 +258,7 @@ function ManagerDashboard() {
                   />
                 ))
             : projects.map((project) => {
-                const projectTasks = [...teamTasks].filter(
+                const projectTasks = project.tasks.filter(
                   (t) => t.projectId === project.id
                 );
                 const completedCount = projectTasks.filter(
@@ -269,7 +286,11 @@ function ManagerDashboard() {
                               : "text-blue-600 bg-blue-200 px-3 py-2 rounded-full"
                           }
                         >
-                          {project.status}
+                          {project.status === "active"
+                            ? "Active"
+                            : project.status === "archived"
+                            ? "Archived"
+                            : "Completed"}
                         </span>
                       </p>
                     </div>

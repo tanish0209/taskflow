@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getIO } from "@/lib/socketServer";
 import {
   createSubTaskInput,
   createSubTaskSchema,
@@ -14,8 +15,7 @@ export const subTaskService = {
       where: { id: ValidatedData.taskId },
     });
     if (!task) throw new Error("Parent task does not exist");
-
-    return prisma.subtask.create({
+    const subTask = await prisma.subtask.create({
       data: ValidatedData,
       select: {
         id: true,
@@ -26,6 +26,9 @@ export const subTaskService = {
         task: { select: { id: true, title: true } },
       },
     });
+    const io = getIO();
+    io.to(`task_${ValidatedData.taskId}`).emit("subtask-created", subTask);
+    return subTask;
   },
 
   async getSubtasksByTaskId(taskId: string) {
@@ -66,8 +69,7 @@ export const subTaskService = {
 
     const existingSubtask = await prisma.subtask.findUnique({ where: { id } });
     if (!existingSubtask) throw new Error("Subtask does not exist");
-
-    return prisma.subtask.update({
+    const updatedSubtask = await prisma.subtask.update({
       where: { id },
       data: ValidatedData,
       select: {
@@ -78,6 +80,12 @@ export const subTaskService = {
         task: { select: { id: true, title: true } },
       },
     });
+    const io = getIO();
+    io.to(`task_${ValidatedData.taskId}`).emit(
+      "subtask-updated",
+      updatedSubtask
+    );
+    return updatedSubtask;
   },
 
   async deleteSubtask(id: string) {
@@ -85,6 +93,8 @@ export const subTaskService = {
     if (!subtask) throw new Error("Subtask does not exist");
 
     await prisma.subtask.delete({ where: { id } });
+    const io = getIO();
+    io.to(`task_${subtask.taskId}`).emit("subtask-deleted", { id });
     return { message: "Subtask deleted successfully" };
   },
 };

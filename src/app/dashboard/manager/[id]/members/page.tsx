@@ -1,8 +1,7 @@
-// pages/dashboard/manager/project-members/page.tsx
 "use client";
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { getSocket } from "@/lib/socket";
 
 interface User {
   id: string;
@@ -10,26 +9,21 @@ interface User {
   email: string;
   role: string;
 }
-
 interface Project {
   id: string;
   name: string;
 }
-
 interface ProjectMember {
   id: string;
   user: User;
   joinedAt: string;
 }
-
 export default function ProjectMembersPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [membersByProject, setMembersByProject] = useState<
     Record<string, ProjectMember[]>
   >({});
   const [loading, setLoading] = useState(true);
-
-  // Fetch projects and their members
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -61,6 +55,16 @@ export default function ProjectMembersPage() {
       }
     };
     fetchProjects();
+    const socket = getSocket();
+    socket.on(
+      "projectmember-updated",
+      (data: { projectId: string; members: ProjectMember[] }) => {
+        setMembersByProject((prev) => ({
+          ...prev,
+          [data.projectId]: data.members,
+        }));
+      }
+    );
   }, []);
 
   const SkeletonCard = () => (

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import TaskCard from "@/components/ui/TaskCard";
+import { getSocket } from "@/lib/socket";
+import type { Socket } from "socket.io-client";
 
 type Task = {
   id: string;
@@ -27,6 +29,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
   const { data: session } = useSession();
 
   const updateStatus = async (taskId: string, newStatus: Task["status"]) => {
@@ -37,13 +40,11 @@ export default function TasksPage() {
       await axios.patch(`/api/tasks/${taskId}`, { status: newStatus });
     } catch (error) {
       console.error("Failed to update task status:", error);
-
       setTasks((prev) =>
         prev.map((t) => (t.id === taskId ? { ...t, status: t.status } : t))
       );
     }
   };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -54,8 +55,9 @@ export default function TasksPage() {
         const projectsData: Project[] = projectsRes.data.data || [];
         setProjects(projectsData);
 
-        const tasksArr = projectsData.flatMap((project) => project.tasks || []);
-        setTasks(tasksArr);
+        const tasksRes = await axios.get(`/api/tasks/user/${userId}`);
+        const tasksData: Task[] = tasksRes.data.data || [];
+        setTasks(tasksData);
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
       } finally {
@@ -65,16 +67,71 @@ export default function TasksPage() {
 
     fetchData();
   }, [session]);
+  useEffect(() => {
+    if (projects.length === 0) return;
+
+    const socket: Socket = getSocket();
+
+    const onConnect = () => {
+      setIsSocketConnected(true);
+      projects.forEach((project) => {
+        socket.emit("join-project", project.id);
+      });
+    };
+    const onDisconnect = () => {
+      setIsSocketConnected(false);
+    };
+
+    const handleTaskCreated = (task: Task) => {
+      if (projects.some((p) => p.id === task.projectId)) {
+        setTasks((prev) => {
+          if (prev.some((t) => t.id === task.id)) {
+            return prev;
+          }
+          return [...prev, task];
+        });
+      }
+    };
+
+    const handleTaskUpdated = (task: Task) => {
+      if (projects.some((p) => p.id === task.projectId)) {
+        setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+      }
+    };
+
+    const handleTaskDeleted = ({ id }: { id: string }) => {
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    };
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("task-created", handleTaskCreated);
+    socket.on("task-updated", handleTaskUpdated);
+    socket.on("task-deleted", handleTaskDeleted);
+    if (socket.connected) {
+      onConnect();
+    }
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("task-created", handleTaskCreated);
+      socket.off("task-updated", handleTaskUpdated);
+      socket.off("task-deleted", handleTaskDeleted);
+      projects.forEach((project) => {
+        socket.emit("leave-project", project.id);
+      });
+    };
+  }, [projects]);
 
   if (!session?.user) return <p>Loading...</p>;
   const userId = session.user.id;
 
   return (
     <div className="p-6 space-y-8 border border-gray-200 bg-white rounded-2xl">
-      <h1 className="text-2xl font-bold">My Tasks</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">My Tasks</h1>
+      </div>
 
       {loading ? (
-        // 🔹 Skeleton Loader
         <div className="space-y-6">
           {[...Array(3)].map((_, idx) => (
             <div

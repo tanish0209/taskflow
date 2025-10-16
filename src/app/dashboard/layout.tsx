@@ -22,7 +22,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import NotificationBell from "@/components/ui/Notifications";
+import NotificationBell from "@/components/ui/NotificationBell";
 
 type Props = {
   children: ReactNode;
@@ -306,14 +306,6 @@ const DashboardLayout = ({ children }: Props) => {
             <h3 className="text-sm font-medium text-gray-400">
               Here&apos;s what&apos;s waiting for you today.
             </h3>
-          </div>
-          <div className="relative w-1/2">
-            <Search className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search by task, project, or label..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-            />
           </div>
 
           <div className="flex items-center space-x-4">

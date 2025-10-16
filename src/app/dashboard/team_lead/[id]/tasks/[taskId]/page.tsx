@@ -73,7 +73,7 @@ interface Task {
   activityLogs?: ActivityLog[];
 }
 
-export default function EmployeeTaskPage() {
+export default function TeamLeadTaskPage() {
   const { taskId } = useParams() as { taskId: string };
   const { data: session } = useSession();
   const userId = session?.user.id;
@@ -246,6 +246,9 @@ export default function EmployeeTaskPage() {
     if (!file) return;
     setFileUploading(true);
     try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("taskId", taskId);
@@ -285,15 +288,6 @@ export default function EmployeeTaskPage() {
 
   return (
     <div>
-      {/* Connection indicator */}
-      <div className="mb-2 text-right">
-        {isSocketConnected ? (
-          <span className="text-green-600 text-xs">🟢 Live</span>
-        ) : (
-          <span className="text-gray-400 text-xs">🔴 Connecting...</span>
-        )}
-      </div>
-
       <TaskPage
         task={task}
         attachments={attachments}
@@ -304,7 +298,7 @@ export default function EmployeeTaskPage() {
         updateStatus={updateStatus}
         handleFileUpload={handleFileUpload}
         fileUploading={fileUploading}
-        role="employee"
+        role="team_lead"
       />
     </div>
   );

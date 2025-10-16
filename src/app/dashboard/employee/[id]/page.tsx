@@ -2,9 +2,10 @@
 
 import OverviewCard from "@/components/ui/OverviewCard";
 import UpcomingCard from "@/components/ui/UpcomingCard";
+import { getSocket } from "@/lib/socket";
 import axios from "axios";
 import { CalendarX2, Check, Clock, ListChecks } from "lucide-react";
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 
@@ -41,16 +42,39 @@ export default function DashboardPage() {
         const projectsRes = await axios.get(`/api/projects/user/${userId}`);
         const projectsData: Project[] = projectsRes.data.data || [];
         setProjects(projectsData);
-        setTasks(projectsData.flatMap((p) => p.tasks || []));
+        const tasksRes = await axios.get(`/api/tasks/user/${userId}`);
+        const tasksData: Task[] = tasksRes.data.data || [];
+        setTasks(tasksData);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
-  }, []);
+    const socket = getSocket();
+    socket.emit("register-user", userId);
+    socket.on("task-created", (task: Task) => {
+      setTasks((prev) => [...prev, task]);
+    });
+    socket.on("task-updated", (task: Task) => {
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+    });
+    socket.on("task-deleted", ({ id }: { id: string }) => {
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    });
+    socket.on("project-created", (project: Project) => {
+      setProjects((prev) => [...prev, project]);
+    });
+    socket.on("project-updated", (project: Project) => {
+      setProjects((prev) =>
+        prev.map((p) => (p.id === project.id ? project : p))
+      );
+    });
+    socket.on("project-deleted", ({ id }: { id: string }) => {
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+    });
+  }, [userId]);
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.status === "done").length;
@@ -124,7 +148,7 @@ export default function DashboardPage() {
                 <OverviewCard
                   title="Todo"
                   value={todoTasks}
-                  description="Tasks past their due date"
+                  description="Tasks to be started"
                   icon={<CalendarX2 className="w-5 h-5 text-yellow-500" />}
                   chipColor="bg-yellow-200"
                   chiptextColor="text-yellow-500"
@@ -243,7 +267,7 @@ export default function DashboardPage() {
                     />
                   ))
               : projects.slice(0, 4).map((project) => {
-                  const projectTasks = tasks.filter(
+                  const projectTasks = project.tasks.filter(
                     (t) => t.projectId === project.id
                   );
                   const completedCount = projectTasks.filter(
@@ -271,7 +295,11 @@ export default function DashboardPage() {
                                 : "text-blue-600 bg-blue-200 px-3 py-2 rounded-full"
                             }
                           >
-                            {project.status}
+                            {project.status === "active"
+                              ? "Active"
+                              : project.status === "archived"
+                              ? "Archived"
+                              : "Completed"}
                           </span>
                         </p>
                       </div>

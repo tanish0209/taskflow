@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getIO } from "@/lib/socketServer";
 import {
   createTagInput,
   createTagSchema,
@@ -13,16 +14,19 @@ export const tagService = {
       where: { name: ValidatedData.name },
     });
     if (exisitngTag) throw new Error("Tag already exists");
-    return prisma.tag.create({
+    const tag = await prisma.tag.create({
       data: ValidatedData,
       select: {
         id: true,
         name: true,
       },
     });
+    const io = getIO();
+    io.emit("tag-created", tag);
+    return tag;
   },
   async getTags() {
-    return prisma.tags.findMany({
+    return prisma.tag.findMany({
       select: {
         id: true,
         name: true,
@@ -61,17 +65,22 @@ export const tagService = {
       if (namecheck && namecheck.id != id)
         throw new Error("Another tag with this name already exists");
     }
-    return prisma.tag.update({
+    const updatedTag = await prisma.tag.update({
       where: { id },
       data: ValidatedData,
       select: { id: true, name: true },
     });
+    const io = getIO();
+    io.emit("tag-updated", updatedTag);
+    return updatedTag;
   },
   async deleteTag(id: string) {
     const tag = await prisma.tag.findUnique({ where: { id } });
     if (!tag) throw new Error("Tag not found");
 
     await prisma.tag.delete({ where: { id } });
+    const io = getIO();
+    io.emit("tag-deleted", { id });
     return { message: "Tag deleted successfully" };
   },
 };

@@ -9,8 +9,13 @@ export async function GET(
     const attachments = await attachmentService.getAttachmentsByTask(
       params.taskId
     );
+    const mappedAttachments = attachments.map((att) => ({
+      id: att.id,
+      url: att.fileUrl,
+      filename: att.filename,
+    }));
     return NextResponse.json(
-      { success: true, data: attachments },
+      { success: true, data: mappedAttachments },
       { status: 200 }
     );
   } catch (error) {

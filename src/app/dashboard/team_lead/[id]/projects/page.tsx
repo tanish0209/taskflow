@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import axios from "axios";
 import ProjectCard from "@/components/ui/ProjectCard";
+import { getSocket } from "@/lib/socket";
 
 type Task = {
   id: string;
@@ -35,18 +36,32 @@ function ProjectCardSkeleton() {
 export default function MyProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [projectCode, setProjectCode] = useState("");
+  const { data: session } = useSession();
+  const userId = session?.user.id;
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const session = await getSession();
-        if (!session?.user) return;
-
-        const userId = session.user.id;
         const res = await axios.get(`/api/projects/user/${userId}`);
         const projectsData: Project[] = res.data.data || [];
-
         setProjects(projectsData);
+
+        const socket = getSocket();
+        socket.emit("register-user", userId);
+        socket.on("project-created", (newProject: Project) => {
+          if (newProject.owner.id === userId) {
+            setProjects((prev) => [...prev, newProject]);
+          }
+        });
+        socket.on("project-updated", (updatedProject: Project) => {
+          setProjects((prev) =>
+            prev.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+          );
+        });
+        socket.on("project-deleted", (deletedProjectId: string) => {
+          setProjects((prev) => prev.filter((p) => p.id !== deletedProjectId));
+        });
       } catch (err) {
         console.error("Error fetching projects:", err);
       } finally {
@@ -56,14 +71,47 @@ export default function MyProjectsPage() {
 
     fetchProjects();
   }, []);
+  const handleProjectRequest = async () => {
+    try {
+      const res = await axios.post(`/api/joinRequests`, {
+        projectId: projectCode,
+        userId: userId,
+      });
+
+      if (res.data.success) {
+        window.postMessage("Join request sent successfully!");
+        setProjectCode("");
+      } else {
+        window.Error(res.data.message || "Failed to send request");
+      }
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">My Projects</h1>
+      <div className="flex items-center justify-between  mb-6">
+        <h1 className="text-2xl font-bold">Project Overview</h1>
+        <div className="flex gap-4">
+          <input
+            type="text"
+            value={projectCode}
+            onChange={(e) => setProjectCode(e.target.value)}
+            placeholder="Enter Project Id to Join"
+            className="border border-gray-200 rounded-xl px-2 py-2"
+          />
+          <button
+            onClick={handleProjectRequest}
+            className="text-white bg-orange-400 rounded-2xl font-bold  px-4"
+          >
+            Request to Join
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {loading ? (
-          // 🔹 Show 4 skeleton cards while loading
           Array.from({ length: 4 }).map((_, i) => (
             <ProjectCardSkeleton key={i} />
           ))

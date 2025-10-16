@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { getSocket } from "@/lib/socket";
 
-type JoinRequestStatus = "pending" | "approved" | "rejected";
+type JoinRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 interface User {
   id: string;
@@ -42,6 +43,16 @@ export default function ManagerJoinRequestsPage() {
       }
     };
     fetchRequests();
+    const socket = getSocket();
+    socket.on("joinrequest-created", (req: JoinRequest) => {
+      setRequests((prev) => [req, ...prev]);
+    });
+
+    socket.on("joinrequest-updated", (updated: JoinRequest) => {
+      setRequests((prev) =>
+        prev.map((r) => (r.id === updated.id ? updated : r))
+      );
+    });
   }, []);
 
   // Group requests by project
@@ -62,7 +73,7 @@ export default function ManagerJoinRequestsPage() {
       await axios.post(`/api/joinRequests/${id}/approve`);
       setRequests((prev) =>
         prev.map((req) =>
-          req.id === id ? { ...req, status: "approved" } : req
+          req.id === id ? { ...req, status: "APPROVED" } : req
         )
       );
     } catch (err) {
@@ -76,7 +87,7 @@ export default function ManagerJoinRequestsPage() {
       await axios.post(`/api/joinRequests/${id}/reject`);
       setRequests((prev) =>
         prev.map((req) =>
-          req.id === id ? { ...req, status: "rejected" } : req
+          req.id === id ? { ...req, status: "REJECTED" } : req
         )
       );
     } catch (err) {
@@ -133,7 +144,7 @@ export default function ManagerJoinRequestsPage() {
                   {projectName}
                 </h2>
 
-                <div className="max-h-64 overflow-y-auto border rounded-lg bg-white p-4 space-y-4 shadow">
+                <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg bg-white p-4 space-y-4 shadow">
                   {projectRequests.map((req) => (
                     <div
                       key={req.id}
@@ -149,17 +160,17 @@ export default function ManagerJoinRequestsPage() {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        {req.status === "pending" ? (
+                        {req.status === "PENDING" ? (
                           <>
                             <button
                               onClick={() => handleApprove(req.id)}
-                              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                              className="px-4 py-2 bg-green-400 text-white hover:bg-green-500  rounded-full"
                             >
                               Approve
                             </button>
                             <button
                               onClick={() => handleReject(req.id)}
-                              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                              className="px-4 py-2 bg-red-400 text-white rounded-full hover:bg-red-500"
                             >
                               Reject
                             </button>
@@ -167,7 +178,7 @@ export default function ManagerJoinRequestsPage() {
                         ) : (
                           <span
                             className={`px-3 py-1 rounded-full text-sm ${
-                              req.status === "approved"
+                              req.status === "APPROVED"
                                 ? "bg-green-200 text-green-700"
                                 : "bg-red-200 text-red-700"
                             }`}

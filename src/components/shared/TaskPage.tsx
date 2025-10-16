@@ -1,7 +1,9 @@
 "use client";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import SubtaskCard from "@/components/ui/SubtaskCard";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import axios from "axios";
 
 type TaskPriority = "low" | "medium" | "high";
 type TaskStatus = "todo" | "in_progress" | "review" | "done";
@@ -33,6 +35,7 @@ export interface Attachment {
   id: string;
   filename: string;
   url: string;
+  fileType: string;
 }
 
 export interface ActivityLog {
@@ -87,7 +90,7 @@ export interface TaskPageProps {
 
 export default function TaskPage({
   task,
-  attachments = [],
+  attachments,
   loading,
   newComment,
   setNewComment,
@@ -99,7 +102,21 @@ export default function TaskPage({
   role,
 }: TaskPageProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [attachment, setAttachments] = useState<Attachment[]>([]);
   const router = useRouter();
+  useEffect(() => {
+    if (!task?.id) return;
+    const fetchAttachments = async () => {
+      try {
+        const res = await axios.get(`/api/attachments/task/${task.id}`);
+        console.log(res.data.data);
+        setAttachments(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch attachments", err);
+      }
+    };
+    fetchAttachments();
+  }, [task?.id]);
 
   if (loading) {
     return (
@@ -150,7 +167,6 @@ export default function TaskPage({
   const comments = task.comments || [];
   const activityLogs = task.activityLogs || [];
   const tags = task.tags || [];
-  console.log(task.tags);
 
   async function deleteTask() {
     if (!task?.id) return;
@@ -302,23 +318,22 @@ export default function TaskPage({
             <p className="text-gray-500 italic">No comments yet</p>
           )}
         </div>
-        {canEdit && (
-          <div className="flex gap-2 mt-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add comment"
-              className="border border-gray-400 px-2 py-1 flex-1 rounded-2xl"
-            />
-            <button
-              onClick={addComment}
-              className="px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:from-orange-600 hover:to-orange-800 transition"
-            >
-              Post
-            </button>
-          </div>
-        )}
+
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Add comment"
+            className="border border-gray-400 px-2 py-1 flex-1 rounded-2xl"
+          />
+          <button
+            onClick={addComment}
+            className="px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:from-orange-600 hover:to-orange-800 transition"
+          >
+            Post
+          </button>
+        </div>
       </section>
 
       {/* Subtasks */}
@@ -346,24 +361,99 @@ export default function TaskPage({
       <section>
         <h2 className="text-xl font-semibold mt-4">Attachments</h2>
         <ul>
-          {attachments.length > 0 ? (
-            attachments.map((att) => (
-              <li key={att.id}>
-                <a
-                  href={att.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  {att.filename}
-                </a>
+          {attachment.map((att, index) => {
+            if (!att.url) return null;
+
+            const ext = att.filename.split(".").pop()?.toLowerCase();
+
+            const isImage =
+              att.fileType?.startsWith("image") ||
+              ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(ext || "");
+            const isVideo =
+              att.fileType?.startsWith("video") ||
+              ["mp4", "mov", "webm"].includes(ext || "");
+            const isPDF = att.fileType === "application/pdf" || ext === "pdf";
+            const isDocx =
+              att.fileType ===
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+              ext === "docx";
+            const isZip = att.fileType === "application/zip" || ext === "zip";
+
+            return (
+              <li
+                key={`${att.id}-${index}`}
+                className="mb-4 flex items-center space-x-4"
+              >
+                {/* IMAGE */}
+                {isImage && (
+                  <Image
+                    src={att.url}
+                    alt={att.filename || "image"}
+                    width={128}
+                    height={128}
+                    className="object-contain border rounded"
+                  />
+                )}
+
+                {/* VIDEO */}
+                {isVideo && (
+                  <video
+                    src={att.url}
+                    controls
+                    className="w-64 h-auto border rounded"
+                  />
+                )}
+
+                {/* PDF */}
+                {isPDF && (
+                  <a
+                    href={att.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-blue-600 underline"
+                  >
+                    {att.filename}
+                  </a>
+                )}
+
+                {/* DOCX */}
+                {isDocx && (
+                  <a
+                    href={att.url}
+                    download
+                    className="flex items-center gap-2 text-blue-600 underline"
+                  >
+                    {att.filename}
+                  </a>
+                )}
+
+                {/* ZIP */}
+                {isZip && (
+                  <a
+                    href={att.url}
+                    download
+                    className="flex items-center gap-2 text-blue-600 underline"
+                  >
+                    {att.filename}
+                  </a>
+                )}
+
+                {/* OTHER FILE TYPES */}
+                {!isImage && !isVideo && !isPDF && !isDocx && !isZip && (
+                  <a
+                    href={att.url}
+                    download
+                    className="flex items-center gap-2 text-blue-600 underline"
+                  >
+                    {att.filename}
+                  </a>
+                )}
               </li>
-            ))
-          ) : (
-            <p className="text-gray-500 italic">No attachments yet</p>
-          )}
+            );
+          })}
         </ul>
-        {canEdit && handleFileUpload && (
+
+        {handleFileUpload && (
           <div className="mt-2">
             <input type="file" onChange={handleFileUpload} />
             {fileUploading && <p>Uploading...</p>}

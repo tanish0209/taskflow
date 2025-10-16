@@ -94,7 +94,7 @@ function TaskCard({
       </p>
 
       {/* 👇 Role-based condition */}
-      {role === "employee" && onStatusChange && (
+      {(role === "employee" || role === "team_lead") && onStatusChange && (
         <select
           value={status}
           onChange={(e) =>

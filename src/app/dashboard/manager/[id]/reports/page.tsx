@@ -1,8 +1,8 @@
-// pages/dashboard/manager/reports/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { getSocket } from "@/lib/socket";
 
 interface Project {
   id: string;
@@ -62,6 +62,32 @@ export default function ReportsPage() {
       }
     };
     fetchData();
+    const socket = getSocket();
+    socket.on("task-created", (newTask: Task) => {
+      setTasks((prev) => [...prev, newTask]);
+    });
+
+    socket.on("task-updated", (updatedTask: Task) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+      );
+    });
+
+    socket.on("project-updated", (updatedProject: Project) => {
+      setProjects((prev) =>
+        prev.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+      );
+    });
+
+    socket.on(
+      "projectmember-updated",
+      (data: { projectId: string; members: ProjectMember[] }) => {
+        setMembersByProject((prev) => ({
+          ...prev,
+          [data.projectId]: data.members,
+        }));
+      }
+    );
   }, []);
 
   const SkeletonBox = ({ className = "" }) => (

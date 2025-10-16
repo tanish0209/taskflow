@@ -1,6 +1,7 @@
 import { z } from "zod";
 export const createAttachmentSchema = z.object({
   fileUrl: z.url({ error: "Invalid file URL" }),
+  filename: z.string(),
   fileType: z.string().optional(),
   taskId: z.cuid({ error: "Invalid task Id" }).optional().nullable(),
   projectId: z.cuid({ error: "Invalid Project Id" }).optional().nullable(),
@@ -9,6 +10,7 @@ export const createAttachmentSchema = z.object({
 export type createAttachmentInput = z.infer<typeof createAttachmentSchema>;
 export const updateAttachmentSchema = z.object({
   fileUrl: z.url().optional(),
+  filename: z.string().optional(),
   fileType: z.string().optional(),
   taskId: z.cuid().optional().nullable(),
   projectId: z.cuid().optional().nullable(),
