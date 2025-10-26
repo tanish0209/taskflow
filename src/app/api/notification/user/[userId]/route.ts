@@ -6,6 +6,11 @@ export async function GET(
   { params }: { params: { userId: string } }
 ) {
   try {
+    if (params.userId === "adminid")
+      return NextResponse.json(
+        { success: true, message: "No notifications" },
+        { status: 200 }
+      );
     const notifications = await notificationService.getNotificationsByUser(
       params.userId
     );

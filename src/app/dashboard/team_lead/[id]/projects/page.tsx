@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getSession, useSession } from "next-auth/react";
+
 import axios from "axios";
 import ProjectCard from "@/components/ui/ProjectCard";
 import { getSocket } from "@/lib/socket";
@@ -90,7 +91,7 @@ export default function MyProjectsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-white rounded-2xl border border-gray-200">
       <div className="flex items-center justify-between  mb-6">
         <h1 className="text-2xl font-bold">Project Overview</h1>
         <div className="flex gap-4">
@@ -103,7 +104,7 @@ export default function MyProjectsPage() {
           />
           <button
             onClick={handleProjectRequest}
-            className="text-white bg-orange-400 rounded-2xl font-bold  px-4"
+            className="px-3 py-2 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
           >
             Request to Join
           </button>

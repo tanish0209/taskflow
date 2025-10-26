@@ -1,3 +1,4 @@
+import { logEvent } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import NextAuth, { NextAuthOptions } from "next-auth";
@@ -16,6 +17,19 @@ export const authOptions: NextAuthOptions = {
           if (!credentials?.email || !credentials?.password) {
             throw new Error("Please enter both email and password.");
           }
+          if (
+            credentials.email === process.env.ADMIN_EMAIL &&
+            credentials.password === process.env.ADMIN_PASSWORD
+          ) {
+            await logEvent("Admin Login");
+            return {
+              id: "adminid",
+              name: "Admin",
+              email: process.env.ADMIN_EMAIL,
+              role: "admin",
+              createdAt: new Date().toISOString(),
+            };
+          }
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
             select: {
@@ -33,6 +47,7 @@ export const authOptions: NextAuthOptions = {
             user.password
           );
           if (!isValid) throw new Error("Incorrect password.");
+          await logEvent("User Login", { userId: user.id });
           return {
             id: user.id,
             name: user.name,

@@ -155,7 +155,7 @@ export default function ProjectPage() {
           />
           <button
             onClick={handleProjectRequest}
-            className="text-white bg-orange-400 rounded-2xl font-bold  px-4"
+            className="px-3 py-2 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
           >
             Request to Join
           </button>

@@ -1,7 +1,5 @@
 import { Server } from "socket.io";
 import type { Server as HTTPServer } from "http";
-
-// Use a global variable to persist Socket.IO across hot reloads
 declare global {
   var io: Server | undefined;
 }

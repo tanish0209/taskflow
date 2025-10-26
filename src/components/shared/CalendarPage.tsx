@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import "./CalendarOverrides.css";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 
@@ -26,7 +27,6 @@ export default function CalendarPage() {
       const userId = session.user.id;
 
       try {
-        // Try both APIs in parallel
         const [userTasksRes, ownerTasksRes] = await Promise.allSettled([
           axios.get(`/api/tasks/user/${userId}`),
           axios.get(`/api/tasks/owner/${userId}`),
@@ -35,10 +35,16 @@ export default function CalendarPage() {
         let combinedTasks: Task[] = [];
 
         if (userTasksRes.status === "fulfilled") {
-          combinedTasks = [...combinedTasks, ...(userTasksRes.value.data.data || userTasksRes.value.data)];
+          combinedTasks = [
+            ...combinedTasks,
+            ...(userTasksRes.value.data.data || userTasksRes.value.data),
+          ];
         }
         if (ownerTasksRes.status === "fulfilled") {
-          combinedTasks = [...combinedTasks, ...(ownerTasksRes.value.data.data || ownerTasksRes.value.data)];
+          combinedTasks = [
+            ...combinedTasks,
+            ...(ownerTasksRes.value.data.data || ownerTasksRes.value.data),
+          ];
         }
 
         setTasks(combinedTasks);
@@ -75,11 +81,13 @@ export default function CalendarPage() {
     <div className="p-6 space-y-6 bg-white border border-gray-200 rounded-2xl">
       <h1 className="text-2xl font-bold text-black">My Calendar</h1>
 
-      <Calendar
-        onClickDay={handleDateClick}
-        tileContent={tileContent}
-        className="rounded-xl shadow border border-gray-400"
-      />
+      <div className="w-full">
+        <Calendar
+          onClickDay={handleDateClick}
+          tileContent={tileContent}
+          className="rounded-xl shadow border border-gray-200 w-full"
+        />
+      </div>
 
       {selectedDate && (
         <div className="mt-6">
@@ -87,7 +95,7 @@ export default function CalendarPage() {
             Tasks due on {selectedDate.toDateString()}:
           </h2>
           {tasksOnDate.length > 0 ? (
-            <ul className="mt-2 space-x-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <ul className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {tasksOnDate.map((task) => (
                 <li
                   key={task.id}

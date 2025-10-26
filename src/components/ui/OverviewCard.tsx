@@ -24,7 +24,9 @@ export default function OverviewCard({
   subtextColor = "text-gray-600",
 }: OverviewCardProps) {
   return (
-    <div className={`p-6 rounded-xl shadow border border-gray-200 ${bgColor}`}>
+    <div
+      className={`p-6 min-w-60 rounded-xl shadow border border-gray-200 ${bgColor}`}
+    >
       <div
         className={`rounded-full px-3 py-2 inline-flex items-center space-x-2 ${chipColor}`}
       >

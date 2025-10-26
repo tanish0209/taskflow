@@ -31,7 +31,6 @@ app.prepare().then(()=>{
             res.end("internal server error");
         }
     });
-    // Initialize Socket.IO
     const io = new _socketio.Server(httpServer, {
         cors: {
             origin: "*",
@@ -41,7 +40,6 @@ app.prepare().then(()=>{
             ]
         }
     });
-    // Make io accessible globally
     global.io = io;
     io.on("connection", (socket)=>{
         console.log("✅ User Connected:", socket.id);

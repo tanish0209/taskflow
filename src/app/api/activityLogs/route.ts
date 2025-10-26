@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  CreateActivityLogInput,
-  createActivityLogSchema,
-} from "@/schemas/activitylog.schema";
 import { activityLogService } from "@/services/activityLog.service";
+import { createActivityLogSchema } from "@/schemas/activitylog.schema";
+import { requireRole } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const validatedData: CreateActivityLogInput =
-      createActivityLogSchema.parse(body);
+    const validatedData = createActivityLogSchema.parse(body);
 
     const log = await activityLogService.createActivityLog(validatedData);
+
     return NextResponse.json({ success: true, data: log }, { status: 201 });
   } catch (error) {
     const err = error as Error;
@@ -22,14 +20,29 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const logs = await activityLogService.getAllActivityLogs();
-    return NextResponse.json({ success: true, data: logs }, { status: 200 });
-  } catch (error) {
-    const err = error as Error;
+    await requireRole(["admin"]);
+
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "20", 10);
+
+    const { logs, total } = await activityLogService.getAllActivityLogs(
+      page,
+      limit
+    );
+
+    return NextResponse.json({
+      success: true,
+      data: logs,
+      total,
+      page,
+      limit,
+    });
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message: err.message },
+      { success: false, message: error.message },
       { status: 500 }
     );
   }

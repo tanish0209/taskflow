@@ -23,14 +23,15 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const page = searchParams.get("page")
+      ? parseInt(searchParams.get("page")!, 10)
+      : 1;
+    const limit = searchParams.get("limit")
+      ? parseInt(searchParams.get("limit")!, 10)
+      : 10;
+    const overview = searchParams.get("overview") === "true";
 
-    const pageParam = searchParams.get("page");
-    const limitParam = searchParams.get("limit");
-
-    const page = pageParam ? parseInt(pageParam, 10) : 1;
-    const limit = limitParam ? parseInt(limitParam, 10) : 10;
-
-    const users = await userService.getUsers(page, limit);
+    const users = await userService.getUsers({page, limit,overview});
     return NextResponse.json(users, { status: 200 });
   } catch (error) {
     console.error(error);

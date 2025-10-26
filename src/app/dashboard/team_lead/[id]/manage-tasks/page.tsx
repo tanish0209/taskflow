@@ -289,13 +289,141 @@ export default function TeamLeadManageTasksPage() {
       </div>
 
       {/* Add Task Form */}
+      {/* Add Task Form */}
       {showForm && (
         <div className="fixed inset-0 z-50 h-screen flex items-center justify-center bg-gray-400/80">
           <form
             onSubmit={handleAddTask}
             className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-xl space-y-4 shadow-lg"
           >
-            {/* Form inputs here (same as before) */}
+            <h2 className="text-xl font-bold text-center">Add New Task</h2>
+
+            <input
+              type="text"
+              placeholder="Task Title"
+              value={formData.title}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title: e.target.value }))
+              }
+              required
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+            />
+
+            <select
+              value={formData.projectId}
+              onChange={(e) => handleProjectChange(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+            >
+              <option value="">Select Project</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+
+            {formData.projectId && (
+              <select
+                value={formData.assigneeId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    assigneeId: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-200 rounded"
+              >
+                <option value="">Assign to</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <select
+              value={formData.priority}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  priority: e.target.value as "low" | "medium" | "high",
+                }))
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+            >
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
+            </select>
+
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  status: e.target.value as
+                    | "todo"
+                    | "in_progress"
+                    | "review"
+                    | "done",
+                }))
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+            >
+              <option value="todo">To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="review">Review</option>
+              <option value="done">Done</option>
+            </select>
+
+            <input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, dueDate: e.target.value }))
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+            />
+
+            <textarea
+              placeholder="Description (optional)"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+            />
+
+            <input
+              type="text"
+              placeholder="Tags (comma separated)"
+              value={formData.tags}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, tags: e.target.value }))
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded"
+            />
+
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500"
+              >
+                Assign Task
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="flex-1 px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
           </form>
         </div>
       )}

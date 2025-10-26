@@ -8,6 +8,7 @@ import { CalendarX2, Check, Clock, ListChecks } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
+import "@/components/shared/CalendarOverrides.css";
 
 type Task = {
   id: string;
@@ -168,6 +169,7 @@ export default function DashboardPage() {
               <Calendar
                 onChange={(date) => setSelectedDate(date as Date)}
                 value={selectedDate}
+                className="rounded-xl shadow border border-gray-200 w-full"
                 tileClassName={({ date }) => {
                   const formatted = date.toISOString().split("T")[0];
                   const taskDue = tasks.find((t) => t.dueDate === formatted);

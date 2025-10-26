@@ -28,8 +28,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    if (searchParams) {
+      const overview = searchParams.get("overview") === "true";
+      const projects = await ProjectService.getAllProjects({ overview });
+      return NextResponse.json(
+        { success: true, data: projects },
+        { status: 200 }
+      );
+    }
     const projects = await ProjectService.getAllProjects();
     return NextResponse.json(
       { success: true, data: projects },

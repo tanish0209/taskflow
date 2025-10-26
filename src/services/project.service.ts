@@ -7,6 +7,7 @@ import {
   updateProjectSchema,
 } from "@/schemas/project.schema";
 import { notificationService } from "./notification.service";
+import { logEvent } from "@/lib/logger";
 export const ProjectService = {
   async createProject(data: CreateProjectInput) {
     const ValidatedData = createProjectSchema.parse(data);
@@ -24,14 +25,35 @@ export const ProjectService = {
     });
     const io = getIO();
     io.to(`user_${ValidatedData.ownerId}`).emit("project-created", newProject);
+    await logEvent("Project Created", {
+      userId: ValidatedData.ownerId,
+      details: `Project ${ValidatedData.name} created by ${ValidatedData.ownerId}`,
+    });
     return newProject;
   },
-  async getAllProjects() {
+  async getAllProjects(queryParams: { overview?: boolean } = {}) {
+    const { overview = false } = queryParams;
+    if (overview) {
+      return prisma.project.findMany({
+        select: {
+          name: true,
+          description: true,
+          createdAt: true,
+          status: true,
+        },
+      });
+    }
     return prisma.project.findMany({
-      include: {
-        owner: true,
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        status: true,
+        description: true,
         projectMember: true,
         tasks: true,
+        owner: true,
+        joinRequest: true,
       },
     });
   },
@@ -57,6 +79,7 @@ export const ProjectService = {
         tasks: true,
         attachments: true,
         activityLogs: true,
+        projectMember: true,
       },
     });
     if (!project) throw new Error("Project not found");
@@ -85,6 +108,10 @@ export const ProjectService = {
       ValidatedData.status !== existingProject.status
     ) {
       const members = existingProject.projectMember;
+      await logEvent("Project Status Changed", {
+        projectId: id,
+        details: `Project Status Changed from ${existingProject.status} to ${ValidatedData.status}`,
+      });
       for (const member of members) {
         await notificationService.createNotification({
           type: "status_update",
@@ -104,6 +131,10 @@ export const ProjectService = {
     }
     const io = getIO();
     io.to(`project_${id}`).emit("project-updated", updatedProject);
+    await logEvent("Project Updated", {
+      projectId: id,
+      details: `Project ${existingProject.name} updated by ${existingProject.ownerId}`,
+    });
     return updatedProject;
   },
   async deleteProject(id: string) {
@@ -128,6 +159,10 @@ export const ProjectService = {
     }
     await prisma.project.delete({
       where: { id },
+    });
+    await logEvent("Project Deleted", {
+      projectId: id,
+      details: `Project ${existingProject.name} deleted`,
     });
     const io = getIO();
     io.to(`project_${id}`).emit("project-deleted", { id });

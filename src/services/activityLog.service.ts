@@ -6,9 +6,10 @@ import {
 
 export const activityLogService = {
   async createActivityLog(data: CreateActivityLogInput) {
-    const ValidatedData = createActivityLogSchema.parse(data);
-    return prisma.activitylog.create({
-      data: ValidatedData,
+    const validatedData = createActivityLogSchema.parse(data);
+
+    return prisma.activityLog.create({
+      data: validatedData,
       include: {
         user: { select: { id: true, name: true, email: true } },
         task: { select: { id: true, title: true } },
@@ -16,16 +17,23 @@ export const activityLogService = {
       },
     });
   },
-  async getAllActivityLogs() {
-    return prisma.activityLog.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: { select: { id: true, name: true } },
-        task: { select: { id: true, title: true } },
-        project: { select: { id: true, name: true } },
-      },
-    });
+
+  async getAllActivityLogs(page = 1, limit = 20) {
+    const [logs, total] = await Promise.all([
+      prisma.activityLog.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      prisma.activityLog.count(),
+    ]);
+
+    return { logs, total };
   },
+
   async getLogsByUser(userId: string) {
     return prisma.activityLog.findMany({
       where: { userId },
@@ -36,6 +44,7 @@ export const activityLogService = {
       },
     });
   },
+
   async getLogsByProject(projectId: string) {
     return prisma.activityLog.findMany({
       where: { projectId },
@@ -46,6 +55,7 @@ export const activityLogService = {
       },
     });
   },
+
   async getLogsByTask(taskId: string) {
     return prisma.activityLog.findMany({
       where: { taskId },

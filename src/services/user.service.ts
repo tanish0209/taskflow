@@ -6,13 +6,13 @@ import {
 } from "@/schemas/user.schema";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import { logEvent } from "@/lib/logger";
 
 export const userService = {
   async createUser(data: CreateUserInput) {
     const validatedData = createUserSchema.parse(data);
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);
-
-    return prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         ...validatedData,
         password: hashedPassword,
@@ -25,11 +25,28 @@ export const userService = {
         createdAt: true,
       },
     });
+    await logEvent("User Registered", { userId: user.id });
+    return user;
   },
 
-  async getUsers(page = 1, limit = 10) {
+  async getUsers(
+    queryParams: { page?: number; limit?: number; overview?: boolean } = {}
+  ) {
+    const { page = 1, limit = 10, overview = false } = queryParams;
+    if (overview) {
+      return prisma.user.findMany({
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
     const skip = (page - 1) * limit;
-    return prisma.user.findMany({
+    const users = await prisma.user.findMany({
       skip,
       take: limit,
       select: {
@@ -38,10 +55,12 @@ export const userService = {
         email: true,
         role: true,
         createdAt: true,
-        projects: { take: 3, select: { id: true, name: true, status: true } }, // only latest 3
+        projects: { take: 3, select: { id: true, name: true, status: true } },
       },
       orderBy: { createdAt: "desc" },
     });
+    const total = await prisma.user.count();
+    return { users, total };
   },
 
   async getUserById(id: string) {
@@ -66,8 +85,7 @@ export const userService = {
     const validatedData = updateUserSchema.parse(data);
     if (validatedData.password)
       validatedData.password = await bcrypt.hash(validatedData.password, 10);
-
-    return prisma.user.update({
+    const user = await prisma.user.update({
       where: { id },
       data: validatedData,
       select: {
@@ -78,12 +96,15 @@ export const userService = {
         updatedAt: true,
       },
     });
+    await logEvent("User Updated", { userId: id });
+    return user;
   },
 
   async deleteUser(id: string) {
     const user = await prisma.user.findUniqueOrThrow({ where: { id } });
     if (user.role === "admin") throw new Error("Cannot delete Admin users");
     await prisma.user.delete({ where: { id } });
+    await logEvent("User Deleted", { userId: id });
     return "User deleted successfully";
   },
 };

@@ -143,16 +143,25 @@ const DashboardLayout = ({ children }: Props) => {
       },
     ],
     admin: [
-      { href: "/dashboard/users", label: "User Management", icon: UserCog },
       {
-        href: "/dashboard/global-logs",
-        label: "Global Activity Logs",
-        icon: SquareKanban,
+        href: `/dashboard/${role}/${id}/manage-users`,
+        label: "User Management",
+        icon: UserCog,
       },
       {
-        href: "/dashboard/global-notifications",
-        label: "Global Notifications",
-        icon: BellRing,
+        href: `/dashboard/${role}/${id}/manage-projects`,
+        label: "Manage Projects",
+        icon: BookOpenCheck,
+      },
+      {
+        href: `/dashboard/${role}/${id}/manage-requests`,
+        label: "Join Requests",
+        icon: UserPlus,
+      },
+      {
+        href: `/dashboard/${role}/${id}/global-logs`,
+        label: "Global Activity Logs",
+        icon: SquareKanban,
       },
     ],
   };
@@ -275,7 +284,7 @@ const DashboardLayout = ({ children }: Props) => {
           >
             <div className="space-y-1">
               <Link
-                href="/dashboard/settings"
+                href={`/dashboard/user-profile/${session.user.id}`}
                 className="block text-sm p-2 hover:bg-orange-700 rounded"
               >
                 Settings

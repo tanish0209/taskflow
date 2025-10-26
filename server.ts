@@ -27,7 +27,6 @@ app.prepare().then(() => {
     }
   });
 
-  // Initialize Socket.IO
   const io = new Server(httpServer, {
     cors: {
       origin: "*",
@@ -35,7 +34,6 @@ app.prepare().then(() => {
     },
   });
 
-  // Make io accessible globally
   global.io = io;
 
   io.on("connection", (socket) => {

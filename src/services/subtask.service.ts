@@ -1,3 +1,4 @@
+import { logEvent } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { getIO } from "@/lib/socketServer";
 import {
@@ -28,6 +29,10 @@ export const subTaskService = {
     });
     const io = getIO();
     io.to(`task_${ValidatedData.taskId}`).emit("subtask-created", subTask);
+    await logEvent("Subtask Created", {
+      taskId: data.taskId,
+      details: `Subtask ${ValidatedData.title} created in Task ${subTask.task.title}`,
+    });
     return subTask;
   },
 
@@ -85,6 +90,10 @@ export const subTaskService = {
       "subtask-updated",
       updatedSubtask
     );
+    await logEvent("Subtask Updated", {
+      taskId: updatedSubtask.task.id,
+      details: `Subtask ${updatedSubtask.title} updated in task ${updatedSubtask.task.title}`,
+    });
     return updatedSubtask;
   },
 
@@ -95,6 +104,10 @@ export const subTaskService = {
     await prisma.subtask.delete({ where: { id } });
     const io = getIO();
     io.to(`task_${subtask.taskId}`).emit("subtask-deleted", { id });
+    await logEvent("Subtask Deleted", {
+      taskId: subtask.taskId,
+      details: `Subtask ${subtask.title} deleted`,
+    });
     return { message: "Subtask deleted successfully" };
   },
 };

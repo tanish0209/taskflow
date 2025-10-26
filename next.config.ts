@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: undefined,
 
   webpack: (config) => {
-    // Fixes for Socket.IO
     config.externals.push({
       "utf-8-validate": "commonjs utf-8-validate",
       bufferutil: "commonjs bufferutil",

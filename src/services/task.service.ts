@@ -7,6 +7,7 @@ import {
 } from "@/schemas/task.schema";
 import { getIO } from "@/lib/socketServer";
 import { notificationService } from "./notification.service";
+import { logEvent } from "@/lib/logger";
 export const taskService = {
   async createTask(data: createTaskInput) {
     const validatedData = createTaskSchema.parse(data);
@@ -64,6 +65,12 @@ export const taskService = {
       const io = getIO();
       io.to(`project_${validatedData.projectId}`).emit("task-created", task);
     }
+    await logEvent("Task Created", {
+      userId: data.ownerId,
+      projectId: data.projectId,
+      taskId: task.id,
+      details: `Task ${task.title} created`,
+    });
     return task;
   },
 
@@ -189,6 +196,11 @@ export const taskService = {
           userId: existingTask.ownerId,
           isRead: false,
         });
+        await logEvent("Task Status Changed", {
+          details: `Task status changed from ${existingTask.status} to ${validatedData.status}`,
+          taskId: id,
+          projectId: existingTask.projectId,
+        });
       }
       if (validatedData.status === "done" && existingTask.assigneeId) {
         await notificationService.createNotification({
@@ -227,6 +239,11 @@ export const taskService = {
         updatedTask
       );
     }
+    await logEvent("Task Updated", {
+      taskId: id,
+      projectId: existingTask.projectId,
+      details: `Task ${existingTask.title} updated`,
+    });
     return updatedTask;
   },
 
@@ -251,6 +268,11 @@ export const taskService = {
     if (existingTask.projectId) {
       io.to(`project_${existingTask.projectId}`).emit("task-deleted", { id });
     }
+    await logEvent("Task Deleted", {
+      taskId: id,
+      projectId: existingTask.projectId,
+      details: `Task ${existingTask.title} deleted`,
+    });
     return { message: "Task deleted successfully" };
   },
 };
