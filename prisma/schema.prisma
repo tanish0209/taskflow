@@ -17,11 +17,13 @@ datasource db {
 model User{
   id String @id @default(cuid())
   name String 
-  email String @unique @index
+  email String @unique
   password String
   role Role @default(employee)
-  createdAt DateTime @default(now()) @index
+  createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
+  @@index([email])
+  @@index([createdAt])
 
   projects Project[] @relation("UserProjects")
   tasks Task[] @relation("UserTasks")
@@ -38,12 +40,15 @@ model Project{
   id String @id @default(cuid())
   name String
   description String?
-  status ProjectStatus @default(active)
-  createdAt DateTime @default(now())
+  status ProjectStatus @default(active) 
+  createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
+  @@index([createdAt])
 
-  ownerId String
+  ownerId String 
   owner User @relation("UserProjects",fields:[ownerId],references:[id],onDelete:Cascade)
+
+  @@index([ownerId])
 
   tasks Task[]
   attachments Attachment[]
@@ -63,15 +68,19 @@ model Task{
   completedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([createdAt])
 
   projectId String
   project Project @relation(fields:[projectId],references:[id],onDelete:Cascade)
+  @@index([projectId])
 
   assigneeId String
   assignee User @relation("UserTasks",fields:[assigneeId],references:[id],onDelete:SetNull)
+  @@index([assigneeId])
 
   ownerId String?
   owner User? @relation("AssignedBy",fields:[ownerId],references:[id],onDelete:SetNull)
+  @@index([ownerId])
 
   subtasks Subtask[]
   comments Comment[]
@@ -83,23 +92,27 @@ model Subtask{
   id String @id @default(cuid())
   title String
   status SubtaskStatus @default(todo)
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
 
   taskId String
   task  Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  @@index([taskId])
 }
 
 model Comment{
   id String @id @default(cuid())
   content String
   createdAt DateTime @default(now())
+  @@index([createdAt])
 
   taskId String
   task Task @relation(fields:[taskId],references:[id],onDelete:Cascade)
+  @@index([taskId])
 
   authorId String
   author User @relation(fields:[authorId],references:[id],onDelete:Cascade)
+  @@index([authorId])
 }
 model Tag{
   id String @id @default(cuid())
@@ -122,12 +135,15 @@ model Attachment{
 
   taskId String?
   task Task? @relation(fields:[taskId],references:[id],onDelete:Cascade)
+  @@index([taskId])
 
   projectId String?
   project Project? @relation(fields:[projectId],references:[id],onDelete:Cascade)
+  @@index([projectId])
 
   uploadedBy String?
   user User? @relation("UserUploads",fields:[uploadedBy],references:[id],onDelete:SetNull)
+  @@index([uploadedBy])
 }
 
 model Notification{
@@ -136,15 +152,19 @@ model Notification{
   message String
   isRead Boolean @default(false)
   createdAt DateTime @default(now())
+  
+  @@index([createdAt])
 
   userId String
   user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  @@index([userId])
 }
 model ActivityLog{
   id String @id @default(cuid())
   action String
   details String?
   createdAt DateTime @default(now())
+  @@index([createdAt])
 
   userId String?
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -154,29 +174,38 @@ model ActivityLog{
 
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([taskId])
+  @@index([projectId])
 }
 model JoinRequest {
   id        String   @id @default(cuid())
   status    JoinRequestStatus @default(PENDING)
   createdAt DateTime @default(now())
+  @@index([createdAt])
 
   userId    String
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
 
   projectId String
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId])
 }
 
 model ProjectMember {
   id        String   @id @default(cuid())
   role      ProjectRole @default(MEMBER)
   joinedAt  DateTime @default(now())
+  @@index([joinedAt])
 
   projectId String
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId])
 
   userId    String
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
 
   @@unique([projectId, userId]) 
 }

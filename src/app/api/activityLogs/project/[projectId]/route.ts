@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { activityLogService } from "@/services/activityLog.service";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { projectId: string } }
 ) {
   try {
