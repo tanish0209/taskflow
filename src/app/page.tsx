@@ -115,7 +115,7 @@ export default function LandingPage() {
             <p className="text-black font-bold text-2xl sm:text-3xl md:text-3xl leading-snug">
               Empowering Teams to Stay Organized & Achieve More – Effortlessly
             </p>
-            <p className="text-base sm:text-lg text-orange-800">
+            <p className="hidden md:block text-base text-orange-800">
               From smart task management to streamlined project tracking,
               Taskflow helps your team stay productive and aligned at every
               step. Watch how we simplify work and boost efficiency.
@@ -305,7 +305,7 @@ function Feature({
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
           {title}
         </h2>
-        <h5 className="text-sm sm:text-base text-orange-800 mt-1">{desc}</h5>
+        <h5 className="hidden md:block text-sm text-orange-800 mt-1">{desc}</h5>
       </div>
     </div>
   );
