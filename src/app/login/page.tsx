@@ -34,26 +34,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-15 shadow-md rounded-lg w-full max-w-lg border-orange-400 border-4"
+        className="bg-white p-6 sm:p-10 md:p-12 shadow-xl rounded-2xl w-full max-w-md sm:max-w-lg border-2 border-orange-400"
       >
-        <h1 className="text-4xl font-bold mb-6 text-center text-orange-600">
+        {/* Title Section */}
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 text-center text-orange-600">
           Welcome Back!
         </h1>
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          Please Try Logging In
-        </h1>
+        <h2 className="text-lg sm:text-2xl font-semibold mb-6 text-center text-gray-700">
+          Please try logging in
+        </h2>
 
-        {error && <p className="text-red-600 mb-4">{error}</p>}
+        {/* Error Message */}
+        {error && (
+          <p className="text-red-600 mb-4 text-center text-sm sm:text-base">
+            {error}
+          </p>
+        )}
 
+        {/* Inputs */}
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-4 py-2 border border-gray-400 rounded-lg"
+          className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
         />
 
         <input
@@ -61,19 +68,21 @@ export default function LoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 px-4 py-2 border border-gray-400 rounded-lg"
+          className="w-full mb-6 px-4 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
         />
 
-        <div className="w-full flex flex-col justify-center items-center space-y-4">
+        {/* Buttons */}
+        <div className="w-full flex flex-col items-center space-y-4">
           <button
             type="submit"
-            className="px-6 py-3 cursor-pointer rounded-full w-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
+            className="px-6 py-3 rounded-full w-full bg-linear-to-r from-orange-500 to-orange-700 text-white font-semibold text-sm sm:text-base hover:from-orange-600 hover:to-orange-800 shadow-md transition duration-300"
           >
             Login
           </button>
+
           <Link
             href="/"
-            className=" px-6 py-3 text-center cursor-pointer rounded-full w-full  text-black border hover:bg-gray-200 duration-500"
+            className="px-6 py-3 text-center rounded-full w-full text-gray-700 border border-gray-300 font-medium text-sm sm:text-base hover:bg-gray-100 transition duration-300"
           >
             Go Back
           </Link>

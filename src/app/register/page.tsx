@@ -75,7 +75,7 @@ export default function RegisterPage() {
         <div className="w-full flex flex-col justify-center items-center space-y-4">
           <button
             type="submit"
-            className="px-6 py-3 cursor-pointer rounded-full w-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
+            className="px-6 py-3 cursor-pointer rounded-full w-full bg-linear-to-r from-orange-500 to-orange-700 text-white  hover:bg-linear-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
           >
             Register
           </button>
