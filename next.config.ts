@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  outputFileTracingRoot: undefined,
+  outputFileTracingRoot: process.cwd(),
 
   webpack: (config) => {
     config.externals.push({
@@ -21,6 +20,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  reactStrictMode: true,
 };
 
 export default nextConfig;
