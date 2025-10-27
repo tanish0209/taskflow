@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
+import "../styles/CalendarOverrides.css";
+
 import { AuthProvider } from "@/context/AuthContext";
 
 const noto = Nunito({
