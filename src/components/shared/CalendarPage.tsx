@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "./CalendarOverrides.css";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 

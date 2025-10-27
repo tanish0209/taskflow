@@ -7,7 +7,6 @@ import { Check, ListChecks, LoaderCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
-import "@/components/shared/CalendarOverrides.css";
 
 type Task = {
   id: string;
