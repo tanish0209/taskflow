@@ -1,5 +1,6 @@
 "use client";
 import OverviewCard from "@/components/ui/OverviewCard";
+import "@/styles/calendarOverrides.css";
 import UpcomingCard from "@/components/ui/UpcomingCard";
 import { getSocket } from "@/lib/socket";
 import axios from "axios";

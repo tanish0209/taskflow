@@ -4,6 +4,7 @@ import React, { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import "@/styles/calendarOverrides.css";
 import {
   ChevronUp,
   Search,

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
-import "../styles/CalendarOverrides.css";
+import "../styles/calendarOverrides.css";
 
 import { AuthProvider } from "@/context/AuthContext";
 
