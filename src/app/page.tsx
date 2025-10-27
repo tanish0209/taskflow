@@ -63,7 +63,7 @@ export default function LandingPage() {
       {/* ---------- HERO SECTION ---------- */}
       <section
         id="home"
-        className="min-h-screen flex items-center justify-center bg-gray-50 px-6 sm:px-10 md:px-20"
+        className="min-h-screen mt-15 sm:mt-0 flex items-center justify-center bg-gray-50 px-6 sm:px-10 md:px-20"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 max-w-7xl w-full">
           <div className="flex flex-col gap-4 text-center lg:text-left">
