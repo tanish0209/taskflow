@@ -3,10 +3,11 @@ import { notificationService } from "@/services/notification.service";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const result = await notificationService.deleteNotification(params.id);
+    const { id } = await params;
+    const result = await notificationService.deleteNotification(id);
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
     const err = error as Error;

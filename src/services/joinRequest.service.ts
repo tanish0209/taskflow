@@ -79,6 +79,7 @@ export const joinRequestService = {
       where: { id: request.projectId },
       select: { name: true },
     });
+    if (!project) throw new Error("Project not found");
     await notificationService.createNotification({
       type: "status_update",
       message: `Your request to join project "${project.name}" has been approved!`,
@@ -136,10 +137,10 @@ export const joinRequestService = {
     });
   },
   async getJoinRequestsForUser(userId: string) {
-      return prisma.joinRequest.findMany({
-        where: { userId },
-        include: { project: true },
-        orderBy: { createdAt: "desc" },
-      });
-    },
+    return prisma.joinRequest.findMany({
+      where: { userId },
+      include: { project: true },
+      orderBy: { createdAt: "desc" },
+    });
+  },
 };

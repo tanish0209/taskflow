@@ -2,12 +2,12 @@ import { taskService } from "@/services/task.service";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Params {
-  params: { projectId: string };
+  params: Promise<{ projectId: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const { projectId } = params;
+    const { projectId } = await params;
     const tasks = await taskService.getTasksByProject(projectId);
 
     const mappedTasks = tasks.map((t) => ({

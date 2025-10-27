@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Session } from "next-auth";
+import { authOptions } from "./authOptions";
 
 export async function requireRole(allowedRoles: string[]) {
   const session = await getServerSession(authOptions);

@@ -3,12 +3,11 @@ import { projectMemberService } from "@/services/projectMember.service";
 
 export async function GET(
   req: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
-    const members = await projectMemberService.getMembersByProject(
-      params.projectId
-    );
+    const { projectId } = await params;
+    const members = await projectMemberService.getMembersByProject(projectId);
     return NextResponse.json({ success: true, data: members }, { status: 200 });
   } catch (error) {
     const err = error as Error;

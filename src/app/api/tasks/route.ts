@@ -1,7 +1,3 @@
-// src/app/api/tasks/route.ts
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
-import { requireRole } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createTaskSchema } from "@/schemas/task.schema";
 import { taskService } from "@/services/task.service";

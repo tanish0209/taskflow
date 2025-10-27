@@ -3,10 +3,11 @@ import { commentService } from "@/services/comment.service";
 
 export async function GET(
   req: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
-    const comments = await commentService.getCommentsByTask(params.taskId);
+    const { taskId } = await params;
+    const comments = await commentService.getCommentsByTask(taskId);
 
     return NextResponse.json(
       { success: true, data: comments },

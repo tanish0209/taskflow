@@ -8,10 +8,13 @@ import {
 import { getIO } from "@/lib/socketServer";
 import { notificationService } from "./notification.service";
 import { logEvent } from "@/lib/logger";
+
 export const taskService = {
+  // ---------------- CREATE TASK ----------------
   async createTask(data: createTaskInput) {
     const validatedData = createTaskSchema.parse(data);
 
+    // Check project exists
     if (validatedData.projectId) {
       const project = await prisma.project.findUnique({
         where: { id: validatedData.projectId },
@@ -19,6 +22,7 @@ export const taskService = {
       if (!project) throw new Error("Project does not exist");
     }
 
+    // Check assignee exists
     if (validatedData.assigneeId) {
       const user = await prisma.user.findUnique({
         where: { id: validatedData.assigneeId },
@@ -26,19 +30,36 @@ export const taskService = {
       if (!user) throw new Error("Assignee does not exist");
     }
 
+    // Check owner exists
     if (validatedData.ownerId) {
       const user = await prisma.user.findUnique({
         where: { id: validatedData.ownerId },
       });
       if (!user) throw new Error("Owner does not exist");
     }
+
+    // Build Prisma create data safely
+    const dataToCreate: any = {
+      title: validatedData.title,
+      priority: validatedData.priority,
+      status: validatedData.status,
+      ownerId: validatedData.ownerId,
+      projectId: validatedData.projectId,
+    };
+
+    if (validatedData.assigneeId)
+      dataToCreate.assigneeId = validatedData.assigneeId;
+    if (validatedData.dueDate)
+      dataToCreate.dueDate = new Date(validatedData.dueDate);
+    if (validatedData.description)
+      dataToCreate.description = validatedData.description;
+    if (validatedData.startDate)
+      dataToCreate.startDate = validatedData.startDate;
+    if (validatedData.completedAt)
+      dataToCreate.completedAt = validatedData.completedAt;
+
     const task = await prisma.task.create({
-      data: {
-        ...validatedData,
-        dueDate: validatedData.dueDate
-          ? new Date(validatedData.dueDate)
-          : undefined,
-      },
+      data: dataToCreate,
       include: {
         assignee: { select: { id: true, name: true, email: true } },
         owner: { select: { id: true, name: true, email: true } },
@@ -50,30 +71,38 @@ export const taskService = {
         activityLogs: true,
       },
     });
+
+    // Notify assignee
     if (
       validatedData.assigneeId &&
       validatedData.assigneeId !== validatedData.ownerId
     ) {
       await notificationService.createNotification({
         type: "status_update",
-        message: `You have been assigned a new task:"${task.title}"`,
+        message: `You have been assigned a new task: "${task.title}"`,
         userId: validatedData.assigneeId,
         isRead: false,
       });
     }
+
+    // Emit socket event for project
     if (validatedData.projectId) {
       const io = getIO();
       io.to(`project_${validatedData.projectId}`).emit("task-created", task);
     }
+
+    // Log activity
     await logEvent("Task Created", {
-      userId: data.ownerId,
-      projectId: data.projectId,
+      userId: validatedData.ownerId,
+      projectId: validatedData.projectId,
       taskId: task.id,
-      details: `Task ${task.title} created`,
+      details: `Task "${task.title}" created`,
     });
+
     return task;
   },
 
+  // ---------------- GET ALL TASKS ----------------
   async getAllTasks() {
     return prisma.task.findMany({
       include: {
@@ -89,6 +118,7 @@ export const taskService = {
     });
   },
 
+  // ---------------- GET TASK BY ID ----------------
   async getTaskById(id: string) {
     const task = await prisma.task.findUnique({
       where: { id },
@@ -108,6 +138,7 @@ export const taskService = {
     return task;
   },
 
+  // ---------------- GET TASKS BY USER ----------------
   async getTasksByUser(userId: string) {
     return prisma.task.findMany({
       where: { assigneeId: userId },
@@ -124,9 +155,10 @@ export const taskService = {
     });
   },
 
+  // ---------------- GET TASKS BY OWNER ----------------
   async getTasksByOwner(userId: string) {
     return prisma.task.findMany({
-      where: { OR: [{ ownerId: userId }] },
+      where: { ownerId: userId },
       include: {
         project: { select: { id: true, name: true } },
         assignee: { select: { id: true, name: true, email: true } },
@@ -140,6 +172,7 @@ export const taskService = {
     });
   },
 
+  // ---------------- GET TASKS BY PROJECT ----------------
   async getTasksByProject(projectId: string) {
     return prisma.task.findMany({
       where: { projectId },
@@ -155,22 +188,20 @@ export const taskService = {
     });
   },
 
+  // ---------------- UPDATE TASK ----------------
   async updateTask(id: string, data: updateTaskInput) {
     const validatedData = updateTaskSchema.parse(data);
 
     const existingTask = await prisma.task.findUnique({ where: { id } });
     if (!existingTask) throw new Error("Task does not exist");
 
-    const updateData: any = {
-      ...validatedData,
-      dueDate: validatedData.dueDate
-        ? new Date(validatedData.dueDate)
-        : undefined,
-    };
-
+    const updateData: any = { ...validatedData };
+    if (validatedData.dueDate)
+      updateData.dueDate = new Date(validatedData.dueDate);
     Object.keys(updateData).forEach(
       (key) => updateData[key] === undefined && delete updateData[key]
     );
+
     const updatedTask = await prisma.task.update({
       where: { id },
       data: updateData,
@@ -185,6 +216,8 @@ export const taskService = {
         activityLogs: true,
       },
     });
+
+    // Notifications & logs
     if (validatedData.status && validatedData.status !== existingTask.status) {
       if (
         existingTask.ownerId &&
@@ -197,11 +230,12 @@ export const taskService = {
           isRead: false,
         });
         await logEvent("Task Status Changed", {
-          details: `Task status changed from ${existingTask.status} to ${validatedData.status}`,
           taskId: id,
           projectId: existingTask.projectId,
+          details: `Status changed from ${existingTask.status} to ${validatedData.status}`,
         });
       }
+
       if (validatedData.status === "done" && existingTask.assigneeId) {
         await notificationService.createNotification({
           type: "status_update",
@@ -211,6 +245,7 @@ export const taskService = {
         });
       }
     }
+
     if (
       validatedData.assigneeId &&
       validatedData.assigneeId !== existingTask.assigneeId
@@ -231,6 +266,8 @@ export const taskService = {
         });
       }
     }
+
+    // Emit socket events
     const io = getIO();
     io.to(`task_${id}`).emit("task-updated", updatedTask);
     if (validatedData.projectId) {
@@ -239,19 +276,23 @@ export const taskService = {
         updatedTask
       );
     }
+
     await logEvent("Task Updated", {
       taskId: id,
       projectId: existingTask.projectId,
-      details: `Task ${existingTask.title} updated`,
+      details: `Task "${existingTask.title}" updated`,
     });
+
     return updatedTask;
   },
 
+  // ---------------- DELETE TASK ----------------
   async deleteTask(id: string) {
     const existingTask = await prisma.task.findUnique({ where: { id } });
     if (!existingTask) throw new Error("Task not found");
 
     await prisma.task.delete({ where: { id } });
+
     if (
       existingTask.assigneeId &&
       existingTask.assigneeId !== existingTask.ownerId
@@ -263,16 +304,19 @@ export const taskService = {
         isRead: false,
       });
     }
+
     const io = getIO();
     io.to(`task_${id}`).emit("task-deleted", { id });
     if (existingTask.projectId) {
       io.to(`project_${existingTask.projectId}`).emit("task-deleted", { id });
     }
+
     await logEvent("Task Deleted", {
       taskId: id,
       projectId: existingTask.projectId,
-      details: `Task ${existingTask.title} deleted`,
+      details: `Task "${existingTask.title}" deleted`,
     });
+
     return { message: "Task deleted successfully" };
   },
 };

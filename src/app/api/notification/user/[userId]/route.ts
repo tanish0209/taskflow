@@ -3,16 +3,17 @@ import { notificationService } from "@/services/notification.service";
 
 export async function GET(
   req: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    if (params.userId === "adminid")
+    const { userId } = await params;
+    if (userId === "adminid")
       return NextResponse.json(
         { success: true, message: "No notifications" },
         { status: 200 }
       );
     const notifications = await notificationService.getNotificationsByUser(
-      params.userId
+      userId
     );
     return NextResponse.json(
       { success: true, data: notifications },

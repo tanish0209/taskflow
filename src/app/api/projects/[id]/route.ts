@@ -5,10 +5,11 @@ import { ZodError } from "zod";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const project = await ProjectService.getProjectById(params.id);
+    const { id } = await params;
+    const project = await ProjectService.getProjectById(id);
     return NextResponse.json({ success: true, data: project }, { status: 200 });
   } catch (error: unknown) {
     console.error(error);
@@ -24,15 +25,13 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const validatedData = updateProjectSchema.parse(body);
-    const project = await ProjectService.updateProject(
-      validatedData,
-      params.id
-    );
+    const project = await ProjectService.updateProject(validatedData, id);
     return NextResponse.json({ success: true, data: project }, { status: 200 });
   } catch (error) {
     console.error(error);
@@ -55,10 +54,11 @@ export async function PATCH(
 }
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const message = await ProjectService.deleteProject(params.id);
+    const { id } = await params;
+    const message = await ProjectService.deleteProject(id);
 
     return NextResponse.json({ success: true, message }, { status: 200 });
   } catch (error: unknown) {

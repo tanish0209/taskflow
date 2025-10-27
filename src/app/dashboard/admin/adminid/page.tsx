@@ -66,7 +66,7 @@ function AdminDashboard() {
                 .map((_, idx) => (
                   <div
                     key={idx}
-                    className="h-24 bg-gray-200 animate-pulse rounded-xl"
+                    className="w-56 h-40 bg-gray-200 animate-pulse rounded-xl"
                   />
                 ))
             ) : (

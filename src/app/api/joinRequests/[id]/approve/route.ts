@@ -4,11 +4,12 @@ import { requireRole } from "@/lib/auth";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await requireRole(["admin", "manager"]);
-    const request = await joinRequestService.approveJoinRequest(params.id);
+    const request = await joinRequestService.approveJoinRequest(id);
     return NextResponse.json({ success: true, data: request }, { status: 200 });
   } catch (error) {
     const err = error as Error;

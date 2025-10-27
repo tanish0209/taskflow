@@ -3,12 +3,11 @@ import { projectMemberService } from "@/services/projectMember.service";
 
 export async function GET(
   req: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const projects = await projectMemberService.getProjectsForUser(
-      params.userId
-    );
+    const { userId } = await params;
+    const projects = await projectMemberService.getProjectsForUser(userId);
     return NextResponse.json(
       { success: true, data: projects },
       { status: 200 }

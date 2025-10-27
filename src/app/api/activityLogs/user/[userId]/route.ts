@@ -3,10 +3,11 @@ import { activityLogService } from "@/services/activityLog.service";
 
 export async function GET(
   req: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const logs = await activityLogService.getLogsByUser(params.userId);
+    const { userId } = await params;
+    const logs = await activityLogService.getLogsByUser(userId);
     return NextResponse.json({ success: true, data: logs }, { status: 200 });
   } catch (error) {
     const err = error as Error;

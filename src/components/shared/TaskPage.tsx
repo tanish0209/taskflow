@@ -61,7 +61,6 @@ export interface Task {
   priority: TaskPriority;
   status: TaskStatus;
   dueDate?: string;
-  startDate?: string;
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -82,7 +81,7 @@ export interface TaskPageProps {
   setNewComment: (val: string) => void;
   addComment: () => void;
   updateStatus: (id: string, status: SubtaskStatus) => void;
-  updateTaskField?: (field: keyof Task, value: any) => void;
+  updateTaskField?: (field: keyof Task, value: any) => void | Promise<void>;
   handleFileUpload?: (e: ChangeEvent<HTMLInputElement>) => void;
   fileUploading?: boolean;
   role: "employee" | "team_lead" | "manager" | "admin";

@@ -5,10 +5,10 @@ import { ZodError } from "zod";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const subtask = await subTaskService.getSubtaskById(id);
     return NextResponse.json({ success: true, data: subtask }, { status: 200 });
   } catch (error: unknown) {
@@ -25,10 +25,10 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const validatedData = updateSubTaskSchema.parse(body);
     const updatedSubtask = await subTaskService.updateSubtask(
@@ -59,10 +59,10 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const result = await subTaskService.deleteSubtask(id);
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error: unknown) {

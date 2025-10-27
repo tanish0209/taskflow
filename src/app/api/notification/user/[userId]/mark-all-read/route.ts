@@ -3,7 +3,7 @@ import { notificationService } from "@/services/notification.service";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const { userId } = await params;

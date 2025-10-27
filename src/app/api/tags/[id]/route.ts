@@ -5,10 +5,10 @@ import { ZodError } from "zod";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const tag = await tagService.getTagsById(id);
     return NextResponse.json({ success: true, data: tag }, { status: 200 });
   } catch (error) {
@@ -21,10 +21,10 @@ export async function GET(
 }
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const validatedData = updateTagSchema.parse(body);
     const tag = await tagService.updateTag(id, validatedData);
@@ -45,10 +45,10 @@ export async function PATCH(
 }
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const result = await tagService.deleteTag(id);
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {

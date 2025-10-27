@@ -1,13 +1,13 @@
 import { ProjectService } from "@/services/project.service";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Params {
-  params: { userId: string };
-}
-
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) {
   try {
-    const projects = await ProjectService.getProjectsByUser(params.userId);
+    const { userId } = await params;
+    const projects = await ProjectService.getProjectsByUser(userId);
     return NextResponse.json(
       { success: true, data: projects },
       { status: 200 }

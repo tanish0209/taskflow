@@ -2,14 +2,15 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Params {
-  params: { projectId: string };
+  params: Promise<{ projectId: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
+    const { projectId } = await params;
     const projectUsers = await prisma.user.findMany({
       where: {
-        projects: { some: { id: params.projectId } },
+        projects: { some: { id: projectId } },
       },
       select: {
         id: true,

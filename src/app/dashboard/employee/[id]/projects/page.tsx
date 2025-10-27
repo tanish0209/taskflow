@@ -116,7 +116,7 @@ export default function ProjectPage() {
     try {
       const res = await axios.post(`/api/joinRequests`, {
         projectId: projectCode,
-        userId: session.user.id,
+        userId: session?.user.id || [],
       });
 
       if (res.data.success) {

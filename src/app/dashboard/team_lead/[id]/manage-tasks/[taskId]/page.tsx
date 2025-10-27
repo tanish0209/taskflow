@@ -4,62 +4,33 @@ import React, { useEffect, useState, ChangeEvent } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import TaskPage from "@/components/shared/TaskPage";
+import TaskPage, {
+  Task as TaskPageTask,
+  Attachment,
+  Comment,
+  Subtask,
+  Project,
+  User,
+} from "@/components/shared/TaskPage";
 import { toast } from "sonner";
 import { getSocket } from "@/lib/socket";
-
-interface User {
-  id: string;
-  name: string;
-}
-
-interface Subtask {
-  id: string;
-  title: string;
-  status: "todo" | "done";
-}
-
-interface Comment {
-  id: string;
-  content: string;
-  authorId: string;
-  authorName?: string;
-  createdAt: string;
-}
-
-interface Attachment {
-  id: string;
-  filename: string;
-  url: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  priority: "low" | "medium" | "high";
-  status: "todo" | "in_progress" | "review" | "done";
-  dueDate?: string;
-  subtasks: Subtask[];
-  comments: Comment[];
-  attachments: Attachment[];
-}
 
 export default function TeamLeadTaskPage() {
   const { taskId } = useParams() as { taskId: string };
   const { data: session } = useSession();
   const userId = session?.user.id;
 
-  const [task, setTask] = useState<Task | null>(null);
+  const [task, setTask] = useState<TaskPageTask | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [fileUploading, setFileUploading] = useState(false);
+
   useEffect(() => {
     const fetchTask = async () => {
       try {
         const res = await axios.get(`/api/tasks/${taskId}`);
-        const data: Task = res.data.data || res.data;
+        const data: TaskPageTask = res.data.data || res.data;
         setTask(data);
         setAttachments(data.attachments || []);
       } catch (err) {
@@ -71,6 +42,7 @@ export default function TeamLeadTaskPage() {
     };
     fetchTask();
   }, [taskId]);
+
   useEffect(() => {
     if (!taskId) return;
     const socket = getSocket();
@@ -79,7 +51,7 @@ export default function TeamLeadTaskPage() {
 
     socket.on("comment-added", (comment: Comment) => {
       setTask((prev) =>
-        prev ? { ...prev, comments: [...prev.comments, comment] } : prev
+        prev ? { ...prev, comments: [...(prev.comments || []), comment] } : prev
       );
     });
 
@@ -88,7 +60,7 @@ export default function TeamLeadTaskPage() {
         prev
           ? {
               ...prev,
-              subtasks: prev.subtasks.map((st) =>
+              subtasks: prev.subtasks?.map((st) =>
                 st.id === subtask.id ? subtask : st
               ),
             }
@@ -101,8 +73,7 @@ export default function TeamLeadTaskPage() {
     });
   }, [taskId]);
 
-  // --- Update Task Field ---
-  const updateTaskField = async (field: keyof Task, value: any) => {
+  const updateTaskField = async (field: keyof TaskPageTask, value: any) => {
     if (!task) return;
     const oldTask = { ...task };
     setTask({ ...task, [field]: value }); // optimistic
@@ -116,18 +87,17 @@ export default function TeamLeadTaskPage() {
     }
   };
 
-  // --- Update Subtask ---
   const updateStatus = async (
     subtaskId: string,
     newStatus: "todo" | "done"
   ) => {
     if (!task) return;
-    const oldSubtasks = [...task.subtasks];
+    const oldSubtasks = [...(task.subtasks || [])];
     setTask((prev) =>
       prev
         ? {
             ...prev,
-            subtasks: prev.subtasks.map((st) =>
+            subtasks: prev.subtasks?.map((st) =>
               st.id === subtaskId ? { ...st, status: newStatus } : st
             ),
           }
@@ -143,7 +113,6 @@ export default function TeamLeadTaskPage() {
     }
   };
 
-  // --- Add Comment ---
   const addComment = async () => {
     if (!newComment.trim() || !userId) return;
     const commentPayload = {
@@ -154,7 +123,9 @@ export default function TeamLeadTaskPage() {
     try {
       const res = await axios.post("/api/comments/", commentPayload);
       setTask((prev) =>
-        prev ? { ...prev, comments: [...prev.comments, res.data.data] } : prev
+        prev
+          ? { ...prev, comments: [...(prev.comments || []), res.data.data] }
+          : prev
       );
       setNewComment("");
       toast?.success("Comment added");
@@ -164,7 +135,6 @@ export default function TeamLeadTaskPage() {
     }
   };
 
-  // --- File Upload ---
   const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

@@ -283,12 +283,17 @@ const DashboardLayout = ({ children }: Props) => {
             }`}
           >
             <div className="space-y-1">
-              <Link
-                href={`/dashboard/user-profile/${session.user.id}`}
-                className="block text-sm p-2 hover:bg-orange-700 rounded"
-              >
-                Settings
-              </Link>
+              {(role === "manager" ||
+                role === "employee" ||
+                role === "team_lead") && (
+                <Link
+                  href={`/dashboard/user-profile/${session.user.id}`}
+                  className="block text-sm p-2 hover:bg-orange-700 rounded"
+                >
+                  Settings
+                </Link>
+              )}
+
               <button
                 onClick={() =>
                   signOut({

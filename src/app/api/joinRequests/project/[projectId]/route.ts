@@ -3,11 +3,12 @@ import { joinRequestService } from "@/services/joinRequest.service";
 
 export async function GET(
   req: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
+    const { projectId } = await params;
     const requests = await joinRequestService.getJoinRequestsForProject(
-      params.projectId
+      projectId
     );
     return NextResponse.json(
       { success: true, data: requests },

@@ -26,8 +26,12 @@ interface Comment {
 }
 
 interface TaskTag {
-  id: string;
-  name: string;
+  tag: {
+    id: string;
+    name: string;
+  };
+  tagId: string;
+  taskId: string;
 }
 
 interface Attachment {

@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import type { NextApiRequest } from "next";
-import { NextApiResponseServerIO } from "@/types/socket";
+import { NextApiResponseServerIO } from "../../../types/socket";
 
 export const config = {
   api: {
@@ -13,7 +13,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
     console.log("Socket.IO already running");
   } else {
     console.log("Initializing Socket.IO");
-    const io = new Server(res.socket.server, {
+    const io = new Server(res.socket.server as any, {
       path: "/api/socketio",
       addTrailingSlash: false,
       cors: {

@@ -3,7 +3,7 @@ import { joinRequestService } from "@/services/joinRequest.service";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const { userId } = await params;

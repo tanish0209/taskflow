@@ -273,9 +273,9 @@ export default function TeamLeadDashboard() {
                 ))
             : projects.map((project) => {
                 const projectTasks =
-                  project.tasks.length > 0
-                    ? project.tasks.filter((t) => t.projectId === project.id)
-                    : [];
+                  project.tasks?.filter((t) => t.projectId === project.id) ||
+                  [];
+
                 const completedCount = projectTasks.filter(
                   (t) => t.status.toLowerCase() === "done"
                 ).length;

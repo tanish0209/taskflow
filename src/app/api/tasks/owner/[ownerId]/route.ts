@@ -1,13 +1,12 @@
 import { taskService } from "@/services/task.service";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Params {
-  params: { ownerId: string };
-}
-
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ ownerId: string }> }
+) {
   try {
-    const { ownerId } = params;
+    const { ownerId } = await params;
     const tasks = await taskService.getTasksByOwner(ownerId);
     return NextResponse.json({ success: true, data: tasks }, { status: 200 });
   } catch (error: unknown) {

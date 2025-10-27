@@ -3,12 +3,11 @@ import { attachmentService } from "@/services/attachment.service";
 
 export async function GET(
   req: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
-    const attachments = await attachmentService.getAttachmentsByTask(
-      params.taskId
-    );
+    const { taskId } = await params;
+    const attachments = await attachmentService.getAttachmentsByTask(taskId);
     const mappedAttachments = attachments.map((att) => ({
       id: att.id,
       url: att.fileUrl,

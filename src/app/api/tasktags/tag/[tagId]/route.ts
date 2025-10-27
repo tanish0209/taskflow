@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { tagId: string } }
+  { params }: { params: Promise<{ tagId: string }> }
 ) {
   try {
-    const { tagId } = params;
+    const { tagId } = await params;
     const tasks = await taskTagService.getTasksForTag(tagId);
     return NextResponse.json({ success: true, data: tasks }, { status: 200 });
   } catch (error) {

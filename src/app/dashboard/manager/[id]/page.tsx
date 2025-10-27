@@ -260,9 +260,9 @@ function ManagerDashboard() {
                   />
                 ))
             : projects.map((project) => {
-                const projectTasks = project.tasks.filter(
-                  (t) => t.projectId === project.id
-                );
+                const projectTasks =
+                  project.tasks?.filter((t) => t.projectId === project.id) ||
+                  [];
                 const completedCount = projectTasks.filter(
                   (t) => t.status === "done"
                 ).length;

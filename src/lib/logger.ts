@@ -33,7 +33,7 @@ export const logEvent = async (
 
     logger.info(`Logged activity: ${action}`);
   } catch (error) {
-    logger.error("Failed to save activity log:", error);
+    logger.error("Failed to save activity log:", error as any);
   }
 };
 

@@ -45,7 +45,6 @@ export default function ManageUsersPage() {
 
   const totalPages = Math.ceil(totalUsers / limit);
 
-  // Delete user
   const handleDelete = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
     try {
@@ -55,6 +54,7 @@ export default function ManageUsersPage() {
       alert(err.response?.data?.message || "Failed to delete user");
     }
   };
+
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await axios.patch(`/api/users/${userId}`, { role: newRole });
@@ -65,6 +65,7 @@ export default function ManageUsersPage() {
       alert("Failed to update role");
     }
   };
+
   const fetchProjects = async (userId: string) => {
     if (!projects[userId]) {
       try {
@@ -75,17 +76,18 @@ export default function ManageUsersPage() {
       }
     }
   };
+
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-2xl">
       <h1 className="text-3xl font-semibold mb-8 text-gray-800">
         Manage Users
       </h1>
 
-      {loading && <p className="text-gray-500">Loading users...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      {!loading && users.length > 0 && (
-        <div className="overflow-x-auto shadow-md rounded-lg">
+      {/* Skeleton Loader */}
+      {loading ? (
+        <div className="overflow-x-auto shadow-md rounded-lg animate-pulse">
           <table className="min-w-full border border-gray-200 text-sm">
             <thead className="bg-orange-100 text-orange-700">
               <tr>
@@ -98,72 +100,113 @@ export default function ManageUsersPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
-              {users.map((user, index) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-orange-50 transition"
-                  onMouseEnter={() => fetchProjects(user.id)}
-                >
+              {Array.from({ length: 10 }).map((_, i) => (
+                <tr key={i}>
                   <td className="px-4 py-3">
-                    {(page - 1) * limit + index + 1}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-gray-700">
-                    {user.name}
+                    <div className="h-3 w-3 bg-gray-200 rounded"></div>
                   </td>
                   <td className="px-4 py-3">
-                    <select
-                      value={user.role}
-                      onChange={(e) =>
-                        handleRoleChange(user.id, e.target.value)
-                      }
-                      className="border rounded px-2 py-1 text-sm"
-                    >
-                      <option value="employee">Employee</option>
-                      <option value="team_lead">Team Lead</option>
-                      <option value="manager">Manager</option>
-                    </select>
+                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {projects[user.id] ? (
-                      projects[user.id].length === 0 ? (
-                        <p className="text-gray-400 text-sm">No projects</p>
-                      ) : (
-                        <div className="flex flex-col gap-1">
-                          {projects[user.id].map((p) => (
-                            <div
-                              key={p.id}
-                              className="flex items-center text-sm"
-                            >
-                              <span className="font-medium">{p.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )
-                    ) : (
-                      <p className="text-gray-400 text-sm">Loading...</p>
-                    )}
-                  </td>
-
-                  <td className="px-4 py-3 text-gray-600">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-
                   <td className="px-4 py-3">
-                    <button
-                      className="text-red-600 hover:underline"
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      <Trash2 />
-                    </button>
+                    <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-4 w-40 bg-gray-200 rounded"></div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-4 w-4 bg-gray-200 rounded"></div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      ) : (
+        users.length > 0 && (
+          <div className="overflow-x-auto shadow-md rounded-lg">
+            <table className="min-w-full border border-gray-200 text-sm">
+              <thead className="bg-orange-100 text-orange-700">
+                <tr>
+                  <th className="px-4 py-3 text-left w-[5%]">#</th>
+                  <th className="px-4 py-3 text-left w-[20%]">Name</th>
+                  <th className="px-4 py-3 text-left w-[15%]">Role</th>
+                  <th className="px-4 py-3 text-left w-[25%]">Projects</th>
+                  <th className="px-4 py-3 text-left w-[15%]">Created At</th>
+                  <th className="px-4 py-3 text-left w-[10%]">Delete</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {users.map((user, index) => (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-orange-50 transition"
+                    onMouseEnter={() => fetchProjects(user.id)}
+                  >
+                    <td className="px-4 py-3">
+                      {(page - 1) * limit + index + 1}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-700">
+                      {user.name}
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={user.role}
+                        onChange={(e) =>
+                          handleRoleChange(user.id, e.target.value)
+                        }
+                        className="border rounded px-2 py-1 text-sm"
+                      >
+                        <option value="employee">Employee</option>
+                        <option value="team_lead">Team Lead</option>
+                        <option value="manager">Manager</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {projects[user.id] ? (
+                        projects[user.id].length === 0 ? (
+                          <p className="text-gray-400 text-sm">No projects</p>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            {projects[user.id].map((p) => (
+                              <div
+                                key={p.id}
+                                className="flex items-center text-sm"
+                              >
+                                <span className="font-medium">{p.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      ) : (
+                        <p className="text-gray-400 text-sm">Loading...</p>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3 text-gray-600">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <button
+                        className="text-red-600 hover:underline"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        <Trash2 />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
 
-      {totalPages > 1 && (
+      {!loading && totalPages > 1 && (
         <div className="flex justify-between items-center mt-6">
           <button
             className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"

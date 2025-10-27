@@ -269,9 +269,9 @@ export default function DashboardPage() {
                     />
                   ))
               : projects.slice(0, 4).map((project) => {
-                  const projectTasks = project.tasks.filter(
-                    (t) => t.projectId === project.id
-                  );
+                  const projectTasks =
+                    project.tasks?.filter((t) => t.projectId === project.id) ||
+                    [];
                   const completedCount = projectTasks.filter(
                     (t) => t.status === "done"
                   ).length;

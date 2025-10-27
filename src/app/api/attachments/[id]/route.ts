@@ -8,10 +8,11 @@ import cloudinary from "@/lib/cloudinary";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const attachment = await attachmentService.getAttachmentById(params.id);
+    const { id } = await params;
+    const attachment = await attachmentService.getAttachmentById(id);
     return NextResponse.json(
       { success: true, data: attachment },
       { status: 200 }
@@ -27,17 +28,15 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const validatedData: updateAttachmentInput =
       updateAttachmentSchema.parse(body);
 
-    const updated = await attachmentService.updateAttachment(
-      params.id,
-      validatedData
-    );
+    const updated = await attachmentService.updateAttachment(id, validatedData);
     return NextResponse.json({ success: true, data: updated }, { status: 200 });
   } catch (error) {
     const err = error as Error;
@@ -51,10 +50,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const attachment = await attachmentService.getAttachmentById(params.id);
+    const { id } = await params;
+    const attachment = await attachmentService.getAttachmentById(id);
     const publicIdMatch = attachment.fileUrl.match(
       /\/upload\/(?:v\d+\/)?(.+)\.\w+$/
     );
@@ -65,7 +65,7 @@ export async function DELETE(
       await cloudinary.uploader.destroy(publicId);
     }
 
-    await attachmentService.deleteAttachment(params.id);
+    await attachmentService.deleteAttachment(id);
 
     return NextResponse.json(
       { success: true, message: "Attachment deleted successfully" },

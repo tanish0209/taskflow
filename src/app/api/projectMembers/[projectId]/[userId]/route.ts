@@ -8,10 +8,10 @@ import { requireRole } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { projectId: string; userId: string } }
+  { params }: { params: Promise<{ projectId: string; userId: string }> }
 ) {
   try {
-    const { projectId, userId } = params;
+    const { projectId, userId } = await params; // await the dynamic params
     const body = await req.json();
     const role = body.role || "MEMBER";
 
@@ -30,19 +30,21 @@ export async function POST(
     );
   }
 }
+
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { projectId: string; userId: string } }
+  { params }: { params: Promise<{ projectId: string; userId: string }> }
 ) {
   try {
     await requireRole(["admin"]);
+    const { projectId, userId } = await params; // await the dynamic params
     const body = await req.json();
     const validatedData: UpdateProjectMemberInput =
       updateProjectMemberSchema.parse(body);
 
     const updated = await projectMemberService.updateMemberRole(
-      params.projectId,
-      params.userId,
+      projectId,
+      userId,
       validatedData
     );
     return NextResponse.json({ success: true, data: updated }, { status: 200 });
@@ -57,18 +59,15 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { projectId: string; userId: string } }
+  { params }: { params: Promise<{ projectId: string; userId: string }> }
 ) {
   try {
     await requireRole(["admin"]);
-    const removed = await projectMemberService.removeMember(
-      params.projectId,
-      params.userId
-    );
+    const { projectId, userId } = await params; // await the dynamic params
+    const removed = await projectMemberService.removeMember(projectId, userId);
     return NextResponse.json({ success: true, data: removed }, { status: 200 });
   } catch (error) {
     const err = error as Error;
-
     return NextResponse.json(
       { success: false, message: err.message },
       { status: 404 }
