@@ -6,7 +6,8 @@
     "dev": "concurrently \"swc server.ts -o server-compiled.js --watch\" \"nodemon server-compiled.js\"",
     "build": "next build && swc server.ts -o server-compiled.js",
     "start": "NODE_ENV=production node server-compiled.js",
-    "lint": "eslint ."
+    "postinstall": "prisma generate",
+    "lint": "eslint"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
