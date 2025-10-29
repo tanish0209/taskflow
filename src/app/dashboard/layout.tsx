@@ -31,15 +31,13 @@ const DashboardLayout = ({ children }: Props) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [profileExpanded, setProfileExpanded] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // default closed on mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
 
-  // Handle authentication redirect
   useEffect(() => {
     if (status !== "loading" && !session) router.push("/login");
   }, [session, status, router]);
 
-  // Detect screen size
   useEffect(() => {
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 1024);
@@ -177,7 +175,6 @@ const DashboardLayout = ({ children }: Props) => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar overlay (for mobile) */}
       {!isDesktop && sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
@@ -185,7 +182,6 @@ const DashboardLayout = ({ children }: Props) => {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed lg:static top-0 left-0 h-full bg-orange-600 opacity-95 text-white flex flex-col justify-between rounded-r-4xl transition-all duration-300 z-40 ${
           sidebarOpen ? "w-64" : "w-0 lg:w-20"
@@ -237,7 +233,9 @@ const DashboardLayout = ({ children }: Props) => {
                     ? "Admin Panel"
                     : role === "manager"
                     ? "Manager Tools"
-                    : "Team Lead Tools"}
+                    : role === "team_lead"
+                    ? "Team Lead Tools"
+                    : "Employee Tools"}
                 </h2>
               )}
               <nav className="space-y-2">
