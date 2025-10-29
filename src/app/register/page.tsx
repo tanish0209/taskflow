@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getSession } from "next-auth/react";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -26,8 +27,12 @@ export default function RegisterPage() {
         const data = await res.json();
         throw new Error(data.message || "Failed to register");
       }
-
-      router.push("/dashboard/employee");
+      const session = await getSession();
+      if (session?.user) {
+        const role = session.user.role;
+        const id = session.user.id;
+        router.push(`/dashboard/${role}/${id}`);
+      }
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);
