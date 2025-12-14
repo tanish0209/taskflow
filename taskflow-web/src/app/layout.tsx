@@ -14,6 +14,22 @@ export const metadata: Metadata = {
   title: "TaskFlow App",
   description:
     "TaskFlow is your go to app for workflow orchestration and project management.",
+  openGraph: {
+    title: "TaskFlow App",
+    description:
+      "TaskFlow is your go to app for workflow orchestration and project management.",
+    url: "https://taskflow-rho-blond.vercel.app",
+    siteName: "Taskflow App",
+    images: [
+      {
+        url: "https://taskflow-rho-blond.vercel.app/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Taskflow App",
+      },
+    ],
+    type: "website",
+  },
 };
 
 export default function RootLayout({
