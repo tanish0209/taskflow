@@ -268,7 +268,7 @@ export default function DashboardLayout({ children }: Props) {
             onClick={() => setProfileExpanded(!profileExpanded)}
           >
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-amber-200 text-orange-800 font-bold">
-              {session.user.name.charAt(0).toUpperCase()}
+              {session.user?.name?.charAt(0).toUpperCase() ?? "U"}
             </div>
 
             {sidebarOpen && (
