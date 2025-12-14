@@ -1,12 +1,24 @@
 import pino from "pino";
 import { activityLogService } from "@/services/activityLog.service";
 
-const logger = pino({
-  transport: {
-    target: "pino-pretty",
-  },
-  level: process.env.NODE_ENV === "production" ? "info" : "debug",
-});
+const isDev = process.env.NODE_ENV !== "production";
+
+const logger = pino(
+  isDev
+    ? {
+        transport: {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:standard",
+          },
+        },
+        level: "debug",
+      }
+    : {
+        level: "info", // NO transport in prod
+      }
+);
 
 export const logEvent = async (
   action: string,
@@ -25,15 +37,15 @@ export const logEvent = async (
   try {
     await activityLogService.createActivityLog({
       action,
-      userId: userId || null,
-      taskId: taskId || null,
-      projectId: projectId || null,
-      details: details ? JSON.stringify(details) : undefined,
+      userId: userId ?? null,
+      taskId: taskId ?? null,
+      projectId: projectId ?? null,
+      details,
     });
 
-    logger.info(`Logged activity: ${action}`);
+    logger.info({ action, userId, taskId, projectId }, "Activity logged");
   } catch (error) {
-    logger.error("Failed to save activity log:", error as any);
+    logger.error(error, "Failed to save activity log");
   }
 };
 
