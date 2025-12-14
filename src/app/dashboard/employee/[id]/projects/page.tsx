@@ -31,33 +31,28 @@ export default function ProjectPage() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      if (!session?.user) return;
-      const userId = session.user.id;
+    if (!session?.user) return;
 
+    const fetchProjects = async () => {
+      const userId = session.user.id;
       try {
         const res = await axios.get(`/api/projects/user/${userId}`);
-        if (res.data.success) {
-          const projectsData: Project[] = res.data.data || [];
 
-          const projectsWithProgress = projectsData.map((project) => {
-            const projectTasks = project.tasks || [];
-            const completedCount = projectTasks.filter(
-              (t) => t.status === "done"
-            ).length;
-            const progress =
-              projectTasks.length > 0
-                ? Math.round((completedCount / projectTasks.length) * 100)
-                : 0;
-            return { ...project, progress };
+        if (res.data.success) {
+          const data: Project[] = res.data.data || [];
+
+          const processed = data.map((p) => {
+            const done =
+              p.tasks?.filter((t) => t.status === "done").length || 0;
+            const total = p.tasks?.length || 0;
+            const progress = total ? Math.round((done / total) * 100) : 0;
+
+            return { ...p, progress };
           });
 
-          setProjects(projectsWithProgress);
-        } else {
-          setError("Failed to load projects");
+          setProjects(processed);
         }
       } catch (err) {
-        console.error(err);
         setError("Failed to load projects");
       } finally {
         setLoading(false);
@@ -66,14 +61,16 @@ export default function ProjectPage() {
 
     fetchProjects();
   }, [session]);
+
   useEffect(() => {
     const socket = getSocket();
+
     socket.on("project-created", (newProject: Project) => {
-      setProjects((prev) => {
-        // Avoid duplicates
-        if (prev.find((p) => p.id === newProject.id)) return prev;
-        return [...prev, { ...newProject, progress: 0 }];
-      });
+      setProjects((prev) =>
+        prev.find((p) => p.id === newProject.id)
+          ? prev
+          : [...prev, { ...newProject, progress: 0 }]
+      );
     });
 
     socket.on("project-updated", (updated: Project) => {
@@ -81,7 +78,6 @@ export default function ProjectPage() {
         prev.map((p) =>
           p.id === updated.id
             ? {
-                ...p,
                 ...updated,
                 progress: calculateProgress(updated.tasks || []),
               }
@@ -102,70 +98,73 @@ export default function ProjectPage() {
           const updatedTasks =
             p.tasks?.map((t) => (t.id === task.id ? task : t)) || [];
 
-          const progress = calculateProgress(updatedTasks);
-          return { ...p, tasks: updatedTasks, progress };
+          return {
+            ...p,
+            tasks: updatedTasks,
+            progress: calculateProgress(updatedTasks),
+          };
         })
       );
     });
   }, []);
+
   const calculateProgress = (tasks: Task[]) => {
-    const completed = tasks.filter((t) => t.status === "done").length;
-    return tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
+    const done = tasks.filter((t) => t.status === "done").length;
+    return tasks.length ? Math.round((done / tasks.length) * 100) : 0;
   };
+
   const handleProjectRequest = async () => {
     try {
       const res = await axios.post(`/api/joinRequests`, {
         projectId: projectCode,
-        userId: session?.user.id || [],
+        userId: session?.user.id,
       });
 
       if (res.data.success) {
-        window.postMessage("Join request sent successfully!");
+        alert("Join request sent!");
         setProjectCode("");
-      } else {
-        window.Error(res.data.message || "Failed to send request");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
     }
   };
+
   if (!session?.user) return <p>Loading...</p>;
 
   const userId = session.user.id;
 
-  if (error) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">{error}</p>
-      </main>
-    );
-  }
-
   return (
-    <main className="min-h-screen bg-white rounded-2xl border border-gray-200 p-6">
-      <div className="flex items-center justify-between  mb-6">
-        <h1 className="text-2xl font-bold">Project Overview</h1>
-        <div className="flex gap-4">
+    <main className="min-h-screen bg-white rounded-2xl border border-gray-200 p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Project Overview</h1>
+
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <input
             type="text"
             value={projectCode}
             onChange={(e) => setProjectCode(e.target.value)}
-            placeholder="Enter Project Id to Join"
-            className="border border-gray-200 rounded-xl px-2 py-2"
+            placeholder="Enter Project Code"
+            className="border border-gray-300 rounded-xl px-3 py-2 w-full sm:w-64 text-sm"
           />
+
           <button
             onClick={handleProjectRequest}
-            className="px-3 py-2 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
+            className="px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white text-sm font-semibold hover:opacity-90 transition"
           >
             Request to Join
           </button>
         </div>
       </div>
 
+      {error && (
+        <p className="text-red-500 text-center my-4 text-sm">{error}</p>
+      )}
+
       {projects.length === 0 && !loading ? (
-        <p className="text-gray-500">No projects found.</p>
+        <p className="text-gray-500 text-center">No projects found.</p>
       ) : (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 ">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {loading
             ? Array(4)
                 .fill(0)
@@ -183,6 +182,7 @@ export default function ProjectPage() {
                   name={project.name}
                   role="employee"
                   description={project.description}
+                  owner={project.owner?.name || "N/A"}
                   status={
                     project.status === "active"
                       ? "Active"
@@ -190,7 +190,6 @@ export default function ProjectPage() {
                       ? "Archived"
                       : "Completed"
                   }
-                  owner={project.owner?.name || "N/A"}
                   progress={project.progress || 0}
                 />
               ))}

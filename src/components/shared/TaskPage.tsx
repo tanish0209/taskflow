@@ -195,15 +195,15 @@ export default function TaskPage({
     <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6 relative">
       {/* Task Info */}
       <div className="space-y-2">
-        <div className="flex justify-between items-start">
-          <div className="flex-1 space-y-2">
+        <div className="md:flex justify-between items-start">
+          <div className="md:flex-1 space-y-2">
             {isEditing && canEdit ? (
               <>
                 <input
                   type="text"
                   value={task.title}
                   onChange={(e) => updateTaskField?.("title", e.target.value)}
-                  className="border px-2 py-1 rounded w-full text-3xl font-extrabold"
+                  className="border px-2 py-1 rounded w-full text-lg sm:text-2xl md:text-3xl font-extrabold"
                 />
                 <textarea
                   value={task.description || ""}
@@ -222,7 +222,7 @@ export default function TaskPage({
                         e.target.value as TaskPriority
                       )
                     }
-                    className="border px-2 py-1 rounded"
+                    className="border px-2 text-xs sm:text-sm py-1 rounded"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -233,7 +233,7 @@ export default function TaskPage({
                     onChange={(e) =>
                       updateTaskField?.("status", e.target.value as TaskStatus)
                     }
-                    className="border px-2 py-1 rounded"
+                    className="border px-2 text-xs sm:text-sm py-1 rounded"
                   >
                     <option value="todo">Todo</option>
                     <option value="in_progress">In Progress</option>
@@ -244,15 +244,15 @@ export default function TaskPage({
               </>
             ) : (
               <>
-                <h1 className="text-3xl font-extrabold text-orange-600">
+                <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-orange-600">
                   {task.title}
                 </h1>
-                <p className="text-xl">
+                <p className="text-sm sm:text-xl">
                   {task.description || "No description"}
                 </p>
                 <div className="flex gap-2 mt-2">
                   <span
-                    className={`px-3 py-1 rounded-full ${getPriorityColor(
+                    className={`px-3 py-1 text-xs sm:text-sm rounded-full ${getPriorityColor(
                       task.priority
                     )}`}
                   >
@@ -260,7 +260,7 @@ export default function TaskPage({
                       task.priority.slice(1)}
                   </span>
                   <span
-                    className={`px-3 py-1 rounded-full ${getStatusColor(
+                    className={`px-3 py-1 text-xs sm:text-sm rounded-full ${getStatusColor(
                       task.status
                     )}`}
                   >
@@ -271,7 +271,7 @@ export default function TaskPage({
             )}
           </div>
           <div>
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-xs sm:text-sm mt-2 md:mt-0">
               Updated: {new Date(task.updatedAt).toLocaleString()}
             </p>
           </div>
@@ -280,35 +280,40 @@ export default function TaskPage({
 
       {/* Tags */}
       <section className="flex gap-4 flex-wrap items-center">
-        <h2 className="text-xl font-semibold">Tags</h2>
+        <h2 className="text-sm sm:text-xl font-semibold">Tags</h2>
         {tags.length > 0 ? (
           tags.map((t) => (
             <span
               key={t.tag.id}
-              className="px-2 py-1 bg-orange-200 rounded-full text-sm text-orange-600"
+              className="px-2 py-1 bg-orange-200 rounded-full text-[10px] sm:text-sm text-orange-600"
             >
               {t.tag.name || "Unnamed"}
             </span>
           ))
         ) : (
-          <p className="text-gray-500 italic">No tags assigned</p>
+          <p className="text-gray-500 text-[10px] italic">No tags assigned</p>
         )}
       </section>
 
       {/* Comments */}
       <section>
-        <h2 className="text-xl font-semibold mt-4">Comments</h2>
+        <h2 className="text-sm sm:text-xl font-semibold mt-4">Comments</h2>
         <div className="py-4 px-6 border border-gray-400 rounded-2xl space-y-2">
           {comments.length > 0 ? (
             comments.map((c) => (
-              <div key={c.id} className="flex justify-between items-start">
+              <div
+                key={c.id}
+                className="sm:flex sm:justify-between items-start"
+              >
                 <div>
-                  <strong className="text-md text-orange-600">
+                  <strong className="text-xs sm:text-md text-orange-600">
                     {c.author?.name}
                   </strong>
-                  <p className="text-sm font-light">{c.content}</p>
+                  <p className="text-[10px] sm:text-sm font-light">
+                    {c.content}
+                  </p>
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-[8px] sm:text-xs text-gray-500">
                   {new Date(c.createdAt).toLocaleString()}
                 </span>
               </div>
@@ -324,11 +329,11 @@ export default function TaskPage({
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add comment"
-            className="border border-gray-400 px-2 py-1 flex-1 rounded-2xl"
+            className="border border-gray-400 px-2 py-1 flex-1 text-[10px] sm:text-lg rounded-2xl"
           />
           <button
             onClick={addComment}
-            className="px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:from-orange-600 hover:to-orange-800 transition"
+            className="px-5 py-2 text-[10px] sm:text-lg rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:from-orange-600 hover:to-orange-800 transition"
           >
             Post
           </button>
@@ -337,8 +342,8 @@ export default function TaskPage({
 
       {/* Subtasks */}
       <section>
-        <h2 className="text-xl font-semibold mt-4">Subtasks</h2>
-        <div className="flex flex-wrap gap-4">
+        <h2 className="text-sm sm:text-xl  font-semibold mt-4">Subtasks</h2>
+        <div className="flex flex-1 lg:flex-wrap gap-4">
           {subtasks.length > 0 ? (
             subtasks.map((sub) => (
               <SubtaskCard
@@ -358,8 +363,9 @@ export default function TaskPage({
 
       {/* Attachments */}
       <section>
-        <h2 className="text-xl font-semibold mt-4">Attachments</h2>
-        <ul>
+        <h2 className="text-sm sm:text-xl font-semibold mt-4">Attachments</h2>
+
+        <ul className="mt-3 flex flex-wrap gap-4">
           {attachment.map((att, index) => {
             if (!att.url) return null;
 
@@ -368,9 +374,11 @@ export default function TaskPage({
             const isImage =
               att.fileType?.startsWith("image") ||
               ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(ext || "");
+
             const isVideo =
               att.fileType?.startsWith("video") ||
               ["mp4", "mov", "webm"].includes(ext || "");
+
             const isPDF = att.fileType === "application/pdf" || ext === "pdf";
             const isDocx =
               att.fileType ===
@@ -381,16 +389,16 @@ export default function TaskPage({
             return (
               <li
                 key={`${att.id}-${index}`}
-                className="mb-4 flex items-center space-x-4"
+                className="p-3 rounded-lg border flex items-center gap-4 w-fit bg-gray-50"
               >
                 {/* IMAGE */}
                 {isImage && (
                   <Image
                     src={att.url}
                     alt={att.filename || "image"}
-                    width={128}
-                    height={128}
-                    className="object-contain border rounded"
+                    width={80}
+                    height={80}
+                    className="object-cover rounded-md border"
                   />
                 )}
 
@@ -399,39 +407,17 @@ export default function TaskPage({
                   <video
                     src={att.url}
                     controls
-                    className="w-64 h-auto border rounded"
+                    className="w-40 h-auto rounded-md border"
                   />
                 )}
 
-                {/* PDF */}
-                {isPDF && (
+                {/* LINK-BASED FILES */}
+                {(isPDF || isDocx || isZip) && (
                   <a
                     href={att.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-600 underline"
-                  >
-                    {att.filename}
-                  </a>
-                )}
-
-                {/* DOCX */}
-                {isDocx && (
-                  <a
-                    href={att.url}
-                    download
-                    className="flex items-center gap-2 text-blue-600 underline"
-                  >
-                    {att.filename}
-                  </a>
-                )}
-
-                {/* ZIP */}
-                {isZip && (
-                  <a
-                    href={att.url}
-                    download
-                    className="flex items-center gap-2 text-blue-600 underline"
+                    className="text-blue-600 underline text-sm sm:text-base"
                   >
                     {att.filename}
                   </a>
@@ -442,7 +428,7 @@ export default function TaskPage({
                   <a
                     href={att.url}
                     download
-                    className="flex items-center gap-2 text-blue-600 underline"
+                    className="text-blue-600 underline text-sm sm:text-base"
                   >
                     {att.filename}
                   </a>
@@ -452,27 +438,20 @@ export default function TaskPage({
           })}
         </ul>
 
+        {/* Upload field */}
         {handleFileUpload && (
-          <div className="mt-2">
-            <input type="file" onChange={handleFileUpload} />
-            {fileUploading && <p>Uploading...</p>}
+          <div className="mt-3">
+            <input
+              type="file"
+              onChange={handleFileUpload}
+              className="text-sm sm:text-base cursor-pointer"
+            />
+            {fileUploading && (
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Uploading...
+              </p>
+            )}
           </div>
-        )}
-      </section>
-
-      {/* Activity Logs */}
-      <section>
-        <h2 className="text-xl font-semibold mt-4">Activity Logs</h2>
-        {activityLogs.length > 0 ? (
-          <ul>
-            {activityLogs.map((log) => (
-              <li key={log.id}>
-                {log.description} - {new Date(log.createdAt).toLocaleString()}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500 italic">No activity logs yet</p>
         )}
       </section>
 

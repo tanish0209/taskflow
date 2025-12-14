@@ -23,26 +23,29 @@ import {
 } from "lucide-react";
 import NotificationBell from "@/components/ui/NotificationBell";
 
-type Props = {
-  children: ReactNode;
-};
+type Props = { children: ReactNode };
 
-const DashboardLayout = ({ children }: Props) => {
+export default function DashboardLayout({ children }: Props) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [profileExpanded, setProfileExpanded] = useState(false);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileExpanded, setProfileExpanded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
 
+  // ----------------------------- AUTH REDIRECT -----------------------------
   useEffect(() => {
     if (status !== "loading" && !session) router.push("/login");
   }, [session, status, router]);
 
+  // ------------------------ RESPONSIVE SIDEBAR CONTROL ----------------------
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-      if (window.innerWidth >= 1024) setSidebarOpen(true);
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      setSidebarOpen(desktop); // Desktop = sidebar open by default
     };
+
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -57,7 +60,7 @@ const DashboardLayout = ({ children }: Props) => {
               key={i}
               className="w-10 h-10 bg-gray-300 rounded-xl animate-pulse"
               style={{ animationDelay: `${i * 0.2}s` }}
-            ></div>
+            />
           ))}
         </div>
         <p className="text-gray-700 font-bold text-2xl">Loading...</p>
@@ -70,13 +73,14 @@ const DashboardLayout = ({ children }: Props) => {
   const role = session.user.role;
   const id = session.user.id;
 
+  // ------------------------ LINKS BASED ON ROLE ------------------------
   const commonLinks = [
     { href: `/dashboard/${role}/${id}`, label: "Dashboard", icon: House },
   ];
 
   const roleLinks: Record<
     string,
-    { href: string; label: string; icon: React.ElementType }[]
+    { href: string; label: string; icon: any }[]
   > = {
     employee: [
       {
@@ -175,21 +179,25 @@ const DashboardLayout = ({ children }: Props) => {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* -------------------------------- OVERLAY FOR MOBILE -------------------------------- */}
       {!isDesktop && sidebarOpen && (
         <div
+          className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity"
         />
       )}
 
+      {/* -------------------------------- SIDEBAR -------------------------------- */}
       <aside
-        className={`fixed lg:static top-0 left-0 h-full bg-orange-600 opacity-95 text-white flex flex-col justify-between rounded-r-4xl transition-all duration-300 z-40 ${
-          sidebarOpen ? "w-64" : "w-0 lg:w-20"
-        } overflow-hidden`}
+        className={`fixed lg:static top-0 left-0 h-full bg-orange-600 text-white flex flex-col justify-between
+        transition-all duration-300 z-40 overflow-hidden
+        ${sidebarOpen ? "w-64" : "w-0 lg:w-20"}`}
       >
+        {/* ---------- TOP SECTION ---------- */}
         <div>
+          {/* Logo + Toggle */}
           <div className="border-b border-orange-800 flex items-center justify-between px-4 py-3">
-            {sidebarOpen && isDesktop && (
+            {sidebarOpen && (
               <Link
                 href="/"
                 className="text-2xl font-bold bg-amber-100 text-black px-4 py-1 rounded-full"
@@ -197,6 +205,7 @@ const DashboardLayout = ({ children }: Props) => {
                 Taskflow<span className="text-orange-700">.</span>
               </Link>
             )}
+
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 text-white hover:bg-orange-700 rounded-full"
@@ -209,71 +218,68 @@ const DashboardLayout = ({ children }: Props) => {
             </button>
           </div>
 
+          {/* Common Links */}
           <nav className="p-4 space-y-2">
-            {commonLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-orange-700 font-medium transition"
-                >
-                  <Icon className="w-5 h-5" />
-                  {sidebarOpen && isDesktop && link.label}
-                </Link>
-              );
-            })}
+            {commonLinks.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-orange-700 font-medium transition"
+              >
+                <Icon className="w-5 h-5" />
+                {sidebarOpen && label}
+              </Link>
+            ))}
           </nav>
 
-          {roleLinks[role] && (
-            <div className="p-4">
-              {sidebarOpen && isDesktop && (
-                <h2 className="text-sm uppercase text-orange-200 font-bold mb-2">
-                  {role === "admin"
-                    ? "Admin Panel"
-                    : role === "manager"
-                    ? "Manager Tools"
-                    : role === "team_lead"
-                    ? "Team Lead Tools"
-                    : "Employee Tools"}
-                </h2>
-              )}
-              <nav className="space-y-2">
-                {roleLinks[role].map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-orange-700 font-bold transition"
-                    >
-                      <Icon className="w-5 h-5" />
-                      {sidebarOpen && isDesktop && link.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-          )}
+          {/* Role-specific Links */}
+          <div className="p-4">
+            {sidebarOpen && (
+              <h2 className="text-sm uppercase text-orange-200 font-bold mb-2">
+                {role === "admin"
+                  ? "Admin Panel"
+                  : role === "manager"
+                  ? "Manager Tools"
+                  : role === "team_lead"
+                  ? "Team Lead Tools"
+                  : "Employee Tools"}
+              </h2>
+            )}
+
+            <nav className="space-y-2">
+              {roleLinks[role]?.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-orange-700 font-bold transition"
+                >
+                  <Icon className="w-5 h-5" />
+                  {sidebarOpen && label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
 
-        {/* Profile section */}
+        {/* ---------- PROFILE DROPDOWN ---------- */}
         <div className="p-4 border-t border-orange-800">
           <div
             className="flex items-center cursor-pointer"
             onClick={() => setProfileExpanded(!profileExpanded)}
           >
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-amber-200 text-orange-800 font-bold">
-              {session?.user?.name?.charAt(0).toUpperCase()}
+              {session.user.name.charAt(0).toUpperCase()}
             </div>
-            {sidebarOpen && isDesktop && (
+
+            {sidebarOpen && (
               <>
                 <div className="ml-3">
-                  <p className="text-sm font-medium">{session?.user?.name}</p>
+                  <p className="text-sm font-medium">{session.user.name}</p>
                   <p className="text-xs text-gray-200 capitalize">
                     {role.replace("_", " ")}
                   </p>
                 </div>
+
                 <ChevronUp
                   className={`ml-auto w-5 h-5 transition-transform ${
                     profileExpanded ? "rotate-180" : ""
@@ -283,7 +289,7 @@ const DashboardLayout = ({ children }: Props) => {
             )}
           </div>
 
-          {profileExpanded && sidebarOpen && isDesktop && (
+          {profileExpanded && sidebarOpen && (
             <div className="mt-2 space-y-2">
               <Link
                 href={`/dashboard/user-profile/${session.user.id}`}
@@ -291,13 +297,9 @@ const DashboardLayout = ({ children }: Props) => {
               >
                 Settings
               </Link>
+
               <button
-                onClick={() =>
-                  signOut({
-                    callbackUrl: "/login",
-                    redirect: true,
-                  })
-                }
+                onClick={() => signOut({ callbackUrl: "/login" })}
                 className="w-full text-left text-sm p-2 bg-amber-100 text-red-800 rounded hover:bg-amber-200"
               >
                 Logout
@@ -307,11 +309,12 @@ const DashboardLayout = ({ children }: Props) => {
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* -------------------------------- MAIN AREA -------------------------------- */}
       <div className="flex flex-col flex-1 overflow-y-auto">
-        {/* Header */}
+        {/* HEADER */}
         <header className="flex items-center justify-between bg-white shadow px-4 sm:px-6 py-3 sticky top-0 z-10">
           <div className="flex items-center gap-3">
+            {/* Mobile Sidebar Toggle */}
             {!isDesktop && (
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -320,11 +323,12 @@ const DashboardLayout = ({ children }: Props) => {
                 <Menu className="w-5 h-5" />
               </button>
             )}
+
             <div>
-              <h1 className="text-lg sm:text-xl font-bold">
-                Welcome, {session?.user?.name}
+              <h1 className="text-sm sm:text-xl font-bold">
+                Welcome, {session.user.name}
               </h1>
-              <p className="text-sm text-gray-400">
+              <p className="text-[10px] sm:text-sm text-gray-400">
                 Here’s what’s waiting today
               </p>
             </div>
@@ -333,11 +337,9 @@ const DashboardLayout = ({ children }: Props) => {
           <NotificationBell />
         </header>
 
-        {/* Content */}
+        {/* CONTENT */}
         <main className="flex-1 p-4 sm:p-6 bg-gray-50">{children}</main>
       </div>
     </div>
   );
-};
-
-export default DashboardLayout;
+}

@@ -151,25 +151,25 @@ export default function ProjectPage() {
     <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6">
       {/* Project Info */}
       <div className="space-y-2">
-        <h1 className="text-4xl font-extrabold text-orange-600">
+        <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-orange-600">
           {project.name}
         </h1>
-        <p className="text-xl font-semibold">
+        <p className="text-lg sm:text-xl font-semibold">
           Description: {project.description || "No description"}
         </p>
-        <p className="text-gray-500">
+        <p className="text-[10px] sm:text-sm text-gray-500">
           Created At: {new Date(project.createdAt).toLocaleString()}
         </p>
-        <p className="text-gray-500">
-          Updated At: {new Date(project.updatedAt).toLocaleString()}
+        <p className="text-[10px] sm:text-sm text-gray-500">
+          Last Updated At: {new Date(project.updatedAt).toLocaleString()}
         </p>
       </div>
 
       {/* Project Tasks */}
       <section>
-        <h2 className="text-xl font-semibold mt-4">Tasks</h2>
+        <h2 className="text-lg sm:text-xl font-semibold my-4">Tasks</h2>
         {tasks.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {tasks.map((task) => (
               <TaskCard
                 key={task.id}

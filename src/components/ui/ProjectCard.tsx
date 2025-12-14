@@ -74,7 +74,7 @@ export default function ProjectCard({
       </div>
       <button
         onClick={handleNavigate}
-        className="px-3 py-2 mt-3 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
+        className="px-3 py-2 mt-3 w-full text-[10px] sm:text-sm rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
       >
         Go to Project
       </button>

@@ -126,9 +126,9 @@ export default function TasksPage() {
   const userId = session.user.id;
 
   return (
-    <div className="p-6 space-y-8 border border-gray-200 bg-white rounded-2xl">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-8 border border-gray-200 bg-white rounded-2xl">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Tasks</h1>
+        <h1 className="text-lg sm:text-2xl font-bold">My Tasks</h1>
       </div>
 
       {loading ? (
@@ -157,9 +157,9 @@ export default function TasksPage() {
           return (
             <div
               key={project.id}
-              className="space-y-4 px-2 py-6 border border-gray-200 rounded-2xl"
+              className="space-y-4 px-4 py-6 border border-gray-200 rounded-2xl"
             >
-              <h2 className="text-2xl font-bold text-orange-600">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">
                 Project: {project.name}
               </h2>
 

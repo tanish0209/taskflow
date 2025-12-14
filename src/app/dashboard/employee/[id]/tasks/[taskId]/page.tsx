@@ -289,15 +289,6 @@ export default function EmployeeTaskPage() {
 
   return (
     <div>
-      {/* Connection indicator */}
-      <div className="mb-2 text-right">
-        {isSocketConnected ? (
-          <span className="text-green-600 text-xs">🟢 Live</span>
-        ) : (
-          <span className="text-gray-400 text-xs">🔴 Connecting...</span>
-        )}
-      </div>
-
       <TaskPage
         task={task}
         attachments={attachments}

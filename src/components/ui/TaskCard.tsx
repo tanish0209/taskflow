@@ -59,11 +59,11 @@ function TaskCard({
   };
 
   return (
-    <div className="p-6 rounded-xl shadow hover:shadow-md transition border border-gray-200 bg-white cursor-pointer">
+    <div className="p-4 sm:p-6 rounded-xl w-full md:max-w-80 shadow hover:shadow-md transition border border-gray-200 bg-white cursor-pointer">
       <div
         className={`inline-flex items-center rounded-full px-3 py-1 ${getStatusColor()}`}
       >
-        <p className="text-sm font-medium">
+        <p className="text-[10px] sm:text-sm font-medium">
           {status === "done"
             ? "Done"
             : status === "in_progress"
@@ -77,19 +77,19 @@ function TaskCard({
       <div
         className={`inline-flex items-center rounded-full px-3 py-1 mx-2 ${getPriorityColor()}`}
       >
-        <p className="text-sm font-medium">
+        <p className="text-[10px] sm:text-sm font-medium">
           {priority === "high" ? "High" : priority === "low" ? "Low" : "Medium"}
         </p>
       </div>
 
-      <h3 className="text-lg font-bold mt-3 text-black">{title}</h3>
-      <p className="text-sm text-gray-500 font-medium">
+      <h3 className="text-sm sm:text-lg font-bold mt-3 text-black">{title}</h3>
+      <p className="text-[10px] sm:text-sm text-gray-500 font-medium">
         Project: {projectName}
       </p>
 
       <hr className="my-2 text-gray-200" />
 
-      <p className="text-sm font-medium text-gray-800">
+      <p className="text-[10px] sm:text-sm font-medium text-gray-800">
         Due: {new Date(dueDate).toLocaleDateString()}
       </p>
 
@@ -100,7 +100,7 @@ function TaskCard({
           onChange={(e) =>
             onStatusChange(taskId, e.target.value as TaskCardProps["status"])
           }
-          className="mt-3 w-full border border-gray-300 hover:bg-gray-100 duration-300 rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+          className="mt-3 w-full border border-gray-300 hover:bg-gray-100 duration-300 rounded-full px-3 py-2 text-[10px] sm:text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
           onClick={(e) => e.stopPropagation()}
         >
           <option value="todo">Todo</option>
@@ -111,7 +111,7 @@ function TaskCard({
       )}
       <button
         onClick={() => router.push(taskLink)}
-        className="px-3 py-2 mt-3 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
+        className="px-3 py-2 mt-3 w-full rounded-full text-[10px] sm:text-sm bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
       >
         Go to Task
       </button>

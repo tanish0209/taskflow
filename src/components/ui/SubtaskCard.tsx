@@ -18,22 +18,22 @@ function SubtaskCard({ id, title, status, onStatusChange }: SubtaskCardProps) {
     }
   };
   return (
-    <div className="p-6 rounded-xl shadow hover:shadow-md transition border border-gray-200 bg-white max-w-xs cursor-pointer">
+    <div className="p-3 sm:p-6 rounded-xl shadow hover:shadow-md transition border border-gray-200 bg-white max-w-xs cursor-pointer">
       <div
         className={`inline-flex items-center rounded-full px-3 py-1 ${getStatusColor()}`}
       >
-        <p className="text-sm font-medium">
+        <p className="text-[10px] sm:text-sm font-medium">
           {status === "done" ? "Done" : "Todo"}
         </p>
       </div>
-      <h3 className="text-lg font-bold mt-3 text-black">{title}</h3>
+      <h3 className="text-sm sm:text-lg font-bold mt-3 text-black">{title}</h3>
 
       <select
         value={status}
         onChange={(e) =>
           onStatusChange(id, e.target.value as SubtaskCardProps["status"])
         }
-        className="mt-3 w-full border border-gray-300 hover:bg-gray-100 duration-300 rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+        className="mt-3 w-full border border-gray-300 hover:bg-gray-100 duration-300 rounded-full px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
         onClick={(e) => e.stopPropagation()}
       >
         <option value="todo">Todo</option>

@@ -25,17 +25,35 @@ export default function OverviewCard({
 }: OverviewCardProps) {
   return (
     <div
-      className={`p-6 min-w-60 rounded-xl shadow border border-gray-200 ${bgColor}`}
+      className={`p-3 px-4 sm:p-6 w-full sm:min-w-60 rounded-xl shadow border border-gray-200 ${bgColor}
+        flex flex-col gap-1 sm:gap-3`}
     >
-      <div
-        className={`rounded-full px-3 py-2 inline-flex items-center space-x-2 ${chipColor}`}
-      >
-        {icon}
-        <p className={`text-sm font-medium ${chiptextColor}`}>{title}</p>
+      <div className="grid grid-cols-[6fr_1fr] gap-8 items-center">
+        <div className="space-y-2">
+          {/* Icon + Title chip */}
+          <div
+            className={`rounded-full px-2 py-1 sm:px-3 sm:py-2 inline-flex items-center sm:space-x-2 ${chipColor}
+        w-fit max-w-full`}
+          >
+            <span className="shrink-0 scale-50 sm:scale-100">{icon}</span>
+            <p
+              className={`text-[10px] sm:text-sm font-medium ${chiptextColor} truncate`}
+            >
+              {title}
+            </p>
+          </div>
+          {/* Subtext */}
+          <p className={`text-sm sm:text-base font-light ${subtextColor}`}>
+            {description}
+          </p>
+        </div>
+        {/* Count / Value */}
+        <p
+          className={`text-2xl sm:text-4xl font-bold ${countColor} break-words leading-tight`}
+        >
+          {value}
+        </p>
       </div>
-
-      <p className={`text-2xl font-bold ${countColor} mt-3`}>{value}</p>
-      <p className={`text-sm font-light ${subtextColor}`}>{description}</p>
     </div>
   );
 }
