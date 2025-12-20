@@ -43,7 +43,6 @@ export const joinRequestService = {
       },
     });
 
-    // 🔔 Notify project owner
     await notificationService.createNotification({
       type: "status_update",
       message: `${user?.name} has requested to join your project "${project.name}"`,
@@ -51,7 +50,6 @@ export const joinRequestService = {
       isRead: false,
     });
 
-    // 🔔 Real-time update to project owner
     await emitSocketEvent("joinrequest-created", {
       room: `user_${project.ownerId}`,
       data: request,
@@ -70,14 +68,12 @@ export const joinRequestService = {
       throw new Error("This request has already been processed");
     }
 
-    // Add member to project
     const member = await projectMemberService.addMember({
       userId: request.userId,
       projectId: request.projectId,
       role: "MEMBER",
     });
 
-    // Update request status
     const updatedRequest = await prisma.joinRequest.update({
       where: { id: requestId },
       data: { status: "APPROVED" },
@@ -89,7 +85,6 @@ export const joinRequestService = {
     });
     if (!project) throw new Error("Project not found");
 
-    // 🔔 Notify requester
     await notificationService.createNotification({
       type: "status_update",
       message: `Your request to join project "${project.name}" has been approved!`,
@@ -97,7 +92,6 @@ export const joinRequestService = {
       isRead: false,
     });
 
-    // 🔔 Real-time updates
     await emitSocketEvent("joinrequest-approved", {
       room: `user_${member.userId}`,
       data: updatedRequest,
@@ -126,7 +120,6 @@ export const joinRequestService = {
       },
     });
 
-    // 🔔 Notify requester
     await notificationService.createNotification({
       type: "status_update",
       message: `Your request to join project "${updatedRequest.project.name}" has been declined`,
@@ -134,7 +127,6 @@ export const joinRequestService = {
       isRead: false,
     });
 
-    // 🔔 Real-time update to requester
     await emitSocketEvent("joinrequest-rejected", {
       room: `user_${request.userId}`,
       data: updatedRequest,

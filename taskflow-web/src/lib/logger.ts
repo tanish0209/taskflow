@@ -1,24 +1,10 @@
 import pino from "pino";
 import { activityLogService } from "@/services/activityLog.service";
 
-const isDev = process.env.NODE_ENV !== "production";
-
-const logger = pino(
-  isDev
-    ? {
-        transport: {
-          target: "pino-pretty",
-          options: {
-            colorize: true,
-            translateTime: "SYS:standard",
-          },
-        },
-        level: "debug",
-      }
-    : {
-        level: "info", // NO transport in prod
-      }
-);
+const logger = pino({
+  level: process.env.NODE_ENV === "production" ? "info" : "debug",
+  base: undefined,
+});
 
 export const logEvent = async (
   action: string,

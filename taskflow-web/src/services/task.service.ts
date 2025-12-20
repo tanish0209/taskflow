@@ -80,7 +80,7 @@ export const taskService = {
       });
     }
 
-    // 🔔 Real-time events
+    //  Real-time events
     if (validatedData.projectId) {
       await emitSocketEvent("task-created", {
         room: `project_${validatedData.projectId}`,
@@ -208,7 +208,7 @@ export const taskService = {
       },
     });
 
-    // 🔔 Real-time updates
+    //  Real-time updates
     await emitSocketEvent("task-updated", {
       room: `task_${id}`,
       data: updatedTask,
@@ -249,7 +249,7 @@ export const taskService = {
       });
     }
 
-    // 🔔 Real-time updates
+    //  Real-time updates
     await emitSocketEvent("task-deleted", {
       room: `task_${id}`,
       data: { id },

@@ -28,7 +28,6 @@ export const ProjectService = {
       data: validatedData,
     });
 
-    // 🔔 Real-time update to owner
     await emitSocketEvent("project-created", {
       room: `user_${validatedData.ownerId}`,
       data: newProject,
@@ -119,7 +118,6 @@ export const ProjectService = {
       data: validatedData,
     });
 
-    // 🔔 Handle status change notifications
     if (
       validatedData.status &&
       validatedData.status !== existingProject.status
@@ -150,7 +148,6 @@ export const ProjectService = {
       }
     }
 
-    // 🔔 Real-time update to project room
     await emitSocketEvent("project-updated", {
       room: `project_${id}`,
       data: updatedProject,

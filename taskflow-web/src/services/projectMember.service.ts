@@ -35,7 +35,7 @@ export const projectMemberService = {
       },
     });
 
-    // 🔔 Notify added user
+    //  Notify added user
     await notificationService.createNotification({
       type: "status_update",
       message: `You have been added to the project "${project?.name}"`,
@@ -43,7 +43,7 @@ export const projectMemberService = {
       isRead: false,
     });
 
-    // 🔔 Real-time update to project room
+    //  Real-time update to project room
     await emitSocketEvent("projectmember-added", {
       room: `project_${validatedData.projectId}`,
       data: memberAdded,
@@ -67,7 +67,7 @@ export const projectMemberService = {
       select: { name: true },
     });
 
-    // 🔔 Notify removed user
+    //  Notify removed user
     await notificationService.createNotification({
       type: "status_update",
       message: `You have been removed from the project "${project?.name}"`,
@@ -75,7 +75,7 @@ export const projectMemberService = {
       isRead: false,
     });
 
-    // 🔔 Real-time update to project room
+    //  Real-time update to project room
     await emitSocketEvent("projectmember-removed", {
       room: `project_${projectId}`,
       data: memberRemoved,
@@ -110,7 +110,7 @@ export const projectMemberService = {
       });
     }
 
-    // 🔔 Real-time update to project room
+    //  Real-time update to project room
     await emitSocketEvent("memberrole-updated", {
       room: `project_${projectId}`,
       data: memberRoleUpdated,

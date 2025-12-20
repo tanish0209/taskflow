@@ -24,7 +24,6 @@ export const tagService = {
       },
     });
 
-    // 🔔 Global real-time update
     await emitSocketEvent("tag-created", {
       data: tag,
     });
@@ -84,7 +83,6 @@ export const tagService = {
       select: { id: true, name: true },
     });
 
-    // 🔔 Global real-time update
     await emitSocketEvent("tag-updated", {
       data: updatedTag,
     });
@@ -98,7 +96,6 @@ export const tagService = {
 
     await prisma.tag.delete({ where: { id } });
 
-    // 🔔 Global real-time update
     await emitSocketEvent("tag-deleted", {
       data: { id },
     });

@@ -41,7 +41,6 @@ export const attachmentService = {
       },
     });
 
-    // 🔔 Emit socket event (task room)
     if (validatedData.taskId) {
       await emitSocketEvent("attachment-created", {
         room: `task_${validatedData.taskId}`,
@@ -101,7 +100,6 @@ export const attachmentService = {
       },
     });
 
-    // 🔔 Emit socket event (user room)
     if (validatedData.uploadedBy) {
       await emitSocketEvent("attachment-updated", {
         room: `user_${validatedData.uploadedBy}`,
@@ -120,7 +118,6 @@ export const attachmentService = {
 
     await prisma.attachment.delete({ where: { id } });
 
-    // 🔔 Emit socket event (user room)
     if (existingAttachment.uploadedBy) {
       await emitSocketEvent("attachment-deleted", {
         room: `user_${existingAttachment.uploadedBy}`,

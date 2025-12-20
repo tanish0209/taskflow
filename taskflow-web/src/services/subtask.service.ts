@@ -29,7 +29,7 @@ export const subTaskService = {
       },
     });
 
-    // 🔔 Real-time update to task room
+    //  Real-time update to task room
     await emitSocketEvent("subtask-created", {
       room: `task_${validatedData.taskId}`,
       data: subTask,
@@ -96,7 +96,7 @@ export const subTaskService = {
       },
     });
 
-    // 🔔 Real-time update to task room
+    //  Real-time update to task room
     await emitSocketEvent("subtask-updated", {
       room: `task_${updatedSubtask.task.id}`,
       data: updatedSubtask,
@@ -116,7 +116,7 @@ export const subTaskService = {
 
     await prisma.subtask.delete({ where: { id } });
 
-    // 🔔 Real-time update to task room
+    //  Real-time update to task room
     await emitSocketEvent("subtask-deleted", {
       room: `task_${subtask.taskId}`,
       data: { id },

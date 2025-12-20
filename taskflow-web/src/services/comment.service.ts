@@ -33,7 +33,6 @@ export const commentService = {
       },
     });
 
-    // 🔔 Handle mentions / notifications (unchanged)
     const mentionPattern = /@(\w+)/g;
     const mentions = [...validatedData.content.matchAll(mentionPattern)];
 
@@ -84,7 +83,6 @@ export const commentService = {
       createdAt: comment.createdAt.toISOString(),
     };
 
-    // 🔔 Emit socket event (task room)
     await emitSocketEvent("comment-created", {
       room: `task_${validatedData.taskId}`,
       data: serializedComment,
@@ -138,7 +136,6 @@ export const commentService = {
       createdAt: updatedComment.createdAt.toISOString(),
     };
 
-    // 🔔 Emit socket event (task room)
     await emitSocketEvent("comment-updated", {
       room: `task_${existing.taskId}`,
       data: serializedComment,
@@ -153,7 +150,6 @@ export const commentService = {
 
     await prisma.comment.delete({ where: { id } });
 
-    // 🔔 Emit socket event (task room)
     await emitSocketEvent("comment-deleted", {
       room: `task_${existing.taskId}`,
       data: { id },
