@@ -118,7 +118,7 @@ Taskflow enables users to manage tasks across multiple projects, track progress 
 
 ### Deployment
 - Vercel
-- Render (backend services where applicable)
+- Render (for websockets)
 
 ---
 
