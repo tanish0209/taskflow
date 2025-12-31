@@ -25,7 +25,7 @@ export default function OverviewCard({
 }: OverviewCardProps) {
   return (
     <div
-      className={`p-3 px-4 sm:p-6 w-full sm:min-w-60 rounded-xl shadow border border-gray-200 ${bgColor}
+      className={`p-4 w-full sm:min-w-60 rounded-xl shadow border border-gray-200 ${bgColor}
         flex flex-col gap-1 sm:gap-3`}
     >
       <div className="grid grid-cols-[6fr_1fr] gap-8 items-center">
@@ -49,7 +49,7 @@ export default function OverviewCard({
         </div>
         {/* Count / Value */}
         <p
-          className={`text-2xl sm:text-4xl font-bold ${countColor} break-words leading-tight`}
+          className={`text-2xl sm:text-4xl font-bold ${countColor} wrap-break-word leading-tight`}
         >
           {value}
         </p>

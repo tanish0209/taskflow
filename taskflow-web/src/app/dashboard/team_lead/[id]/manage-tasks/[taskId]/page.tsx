@@ -9,8 +9,6 @@ import TaskPage, {
   Attachment,
   Comment,
   Subtask,
-  Project,
-  User,
 } from "@/components/shared/TaskPage";
 import { toast } from "sonner";
 import { getSocket } from "@/lib/socket";
@@ -73,10 +71,10 @@ export default function TeamLeadTaskPage() {
     });
   }, [taskId]);
 
-  const updateTaskField = async (field: keyof TaskPageTask, value: any) => {
+  const updateTaskField = async (field: keyof TaskPageTask, value: unknown) => {
     if (!task) return;
     const oldTask = { ...task };
-    setTask({ ...task, [field]: value }); // optimistic
+    setTask({ ...task, [field]: value });
     try {
       await axios.patch(`/api/tasks/${taskId}`, { [field]: value });
       toast?.success("Task updated successfully");

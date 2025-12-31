@@ -21,6 +21,7 @@ interface Attachment {
 interface User {
   id: string;
   name: string;
+  role: "manager" | "employee" | "team_lead" | "admin";
 }
 
 interface Task {
@@ -57,6 +58,7 @@ export default function ProjectPage() {
   const [formData, setFormData] = useState({ name: "", description: "" });
   const { data: session, status } = useSession();
   const userId = session?.user?.id || "";
+  const userRole = session?.user?.role;
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -127,13 +129,12 @@ export default function ProjectPage() {
     if (!confirm("Are you sure you want to delete this project?")) return;
     try {
       await axios.delete(`/api/projects/${project.id}`);
-      router.push("/dashboard/team_lead/manage-projects");
+      router.back();
     } catch (err) {
       console.error("Failed to delete project:", err);
     }
   };
 
-  // 🔹 Skeleton UI
   if (loading) {
     return (
       <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6 animate-pulse">
@@ -189,7 +190,7 @@ export default function ProjectPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
               >
                 Save
               </button>
@@ -203,24 +204,24 @@ export default function ProjectPage() {
           </div>
         ) : (
           <>
-            <div className="flex justify-between">
-              <h1 className="text-4xl font-extrabold text-orange-600">
+            <div className="space-y-2 md:space-y-0 md:flex justify-between">
+              <h1 className="text-2xl lg:text-4xl font-extrabold text-orange-600">
                 {project.name}
               </h1>
               <button
                 onClick={handleEditToggle}
-                className="px-4 py-2 bg-orange-600 text-white rounded-full hover:bg-orange-700"
+                className="px-4 py-2 text-xs md:text-base bg-orange-600 text-white rounded-full hover:bg-orange-700"
               >
                 Edit Project
               </button>
             </div>
-            <p className="text-xl font-semibold">
+            <p className="text-sm md:text-xl font-semibold">
               Description: {project.description || "No description"}
             </p>
-            <p className="text-gray-500">
+            <p className="text-xs md:text-base text-gray-500">
               Created At: {new Date(project.createdAt).toLocaleString()}
             </p>
-            <p className="text-gray-500">
+            <p className="text-xs md:text-base text-gray-500">
               Updated At: {new Date(project.updatedAt).toLocaleString()}
             </p>
           </>
@@ -229,7 +230,7 @@ export default function ProjectPage() {
 
       {/* Project Tasks */}
       <section>
-        <h2 className="text-xl font-semibold mt-4">Tasks</h2>
+        <h2 className="text-sm md:text-xl font-semibold mt-4">Tasks</h2>
         {tasks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tasks.map((task) => {

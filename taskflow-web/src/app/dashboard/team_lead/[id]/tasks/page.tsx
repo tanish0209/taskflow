@@ -47,25 +47,18 @@ export default function TeamLeadTasksPage() {
     }
   };
 
-  // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (!session?.user) return;
         const userId = session.user.id;
-
-        // Fetch projects where user is a member
         const projectsRes = await axios.get(`/api/projects/user/${userId}`);
         const projectsData: Project[] = projectsRes.data.data || [];
         setProjects(projectsData);
 
-        // Fetch tasks assigned to this team lead
         const tasksRes = await axios.get(`/api/tasks/user/${userId}`);
         const tasksData: Task[] = tasksRes.data.data || [];
         setTasks(tasksData);
-
-        console.log("📊 Fetched projects:", projectsData.length);
-        console.log("📋 Fetched tasks:", tasksData.length);
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
       } finally {
@@ -80,13 +73,9 @@ export default function TeamLeadTasksPage() {
     const socket: Socket = getSocket();
 
     const onConnect = () => {
-      console.log("✅ Socket connected:", socket.id);
       setIsSocketConnected(true);
-
-      // Join all project rooms
       projects.forEach((project) => {
         socket.emit("join-project", project.id);
-        console.log(`🔌 Joined project room: project_${project.id}`);
       });
     };
 
@@ -151,9 +140,9 @@ export default function TeamLeadTasksPage() {
   const userId = session.user.id;
 
   return (
-    <div className="p-6 space-y-8 border border-gray-200 bg-white rounded-2xl">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-8 border border-gray-200 bg-white rounded-2xl">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Tasks</h1>
+        <h1 className="text-lg sm:text-2xl font-bold">My Tasks</h1>
       </div>
 
       {loading ? (
@@ -178,7 +167,9 @@ export default function TeamLeadTasksPage() {
       ) : (
         <div>
           {projects.length === 0 ? (
-            <p className="text-gray-500 italic">No projects assigned yet</p>
+            <p className="text-gray-500 text-sm italic">
+              No projects assigned yet
+            </p>
           ) : (
             projects.map((project) => {
               const projectTasks = tasks.filter(
@@ -190,11 +181,11 @@ export default function TeamLeadTasksPage() {
                   key={project.id}
                   className="space-y-4 p-6 border border-gray-200 rounded-2xl mb-6"
                 >
-                  <h2 className="text-2xl font-bold text-orange-600">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">
                     Project: {project.name}
                   </h2>
 
-                  <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="flex flex-wrap gap-4">
                     {projectTasks.length > 0 ? (
                       projectTasks.map((task) => (
                         <TaskCard
@@ -212,7 +203,7 @@ export default function TeamLeadTasksPage() {
                         />
                       ))
                     ) : (
-                      <p className="text-gray-500 italic">
+                      <p className="text-gray-500 text-sm italic">
                         No tasks yet for this project
                       </p>
                     )}

@@ -168,15 +168,19 @@ export default function ManageUsersPage() {
                     <td className="px-4 py-3 text-gray-700">
                       {projects[user.id] ? (
                         projects[user.id].length === 0 ? (
-                          <p className="text-gray-400 text-sm">No projects</p>
+                          <div>
+                            <p className="text-gray-400 text-sm">No projects</p>
+                          </div>
                         ) : (
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-2">
                             {projects[user.id].map((p) => (
                               <div
                                 key={p.id}
                                 className="flex items-center text-sm"
                               >
-                                <span className="font-medium">{p.name}</span>
+                                <div className="px-3 py-2 bg-orange-100 rounded-full">
+                                  <span className="font-medium">{p.name}</span>
+                                </div>
                               </div>
                             ))}
                           </div>

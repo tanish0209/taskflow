@@ -42,22 +42,26 @@ export default function RootLayout({
     <html lang="en">
       <body className={noto.className}>
         <AuthProvider>{children}</AuthProvider>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-G1Q54N8MSW"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="ga-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script
+              id="ga-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-G1Q54N8MSW');
+              gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
             `,
-          }}
-        />
+              }}
+            />
+          </>
+        )}
       </body>
     </html>
   );

@@ -81,7 +81,7 @@ export interface TaskPageProps {
   setNewComment: (val: string) => void;
   addComment: () => void;
   updateStatus: (id: string, status: SubtaskStatus) => void;
-  updateTaskField?: (field: keyof Task, value: any) => void | Promise<void>;
+  updateTaskField?: (field: keyof Task, value: unknown) => void | Promise<void>;
   handleFileUpload?: (e: ChangeEvent<HTMLInputElement>) => void;
   fileUploading?: boolean;
   role: "employee" | "team_lead" | "manager" | "admin";
@@ -89,7 +89,6 @@ export interface TaskPageProps {
 
 export default function TaskPage({
   task,
-  attachments,
   loading,
   newComment,
   setNewComment,
@@ -120,7 +119,6 @@ export default function TaskPage({
   if (loading) {
     return (
       <div className="p-6 border border-gray-200 bg-white rounded-2xl space-y-6 animate-pulse">
-        {/* Title & Description skeleton */}
         <div>
           <div className="h-16 w-1/3 bg-gray-200 rounded mb-2" />
           <div className="h-8 w-2/3 bg-gray-200 rounded" />
@@ -164,7 +162,6 @@ export default function TaskPage({
 
   const subtasks = task.subtasks || [];
   const comments = task.comments || [];
-  const activityLogs = task.activityLogs || [];
   const tags = task.tags || [];
 
   async function deleteTask() {
@@ -298,7 +295,7 @@ export default function TaskPage({
       {/* Comments */}
       <section>
         <h2 className="text-sm sm:text-xl font-semibold mt-4">Comments</h2>
-        <div className="py-4 px-6 border border-gray-400 rounded-2xl space-y-2">
+        <div className="py-4 px-6 border h-[300px] overflow-y-auto border-gray-400 rounded-2xl space-y-2">
           {comments.length > 0 ? (
             comments.map((c) => (
               <div
@@ -333,7 +330,7 @@ export default function TaskPage({
           />
           <button
             onClick={addComment}
-            className="px-5 py-2 text-[10px] sm:text-lg rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white hover:from-orange-600 hover:to-orange-800 transition"
+            className="px-5 py-2 text-[10px] sm:text-lg rounded-full bg-linear-to-r from-orange-500 to-orange-700 text-white hover:from-orange-600 hover:to-orange-800 transition"
           >
             Post
           </button>
@@ -457,7 +454,7 @@ export default function TaskPage({
 
       {/* Edit & Delete Buttons */}
       {canEdit && (
-        <div className="absolute bottom-6 right-6 flex gap-2">
+        <div className="flex gap-2">
           <button
             onClick={() => setIsEditing((prev) => !prev)}
             className="px-5 py-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 transition"

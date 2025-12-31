@@ -95,11 +95,11 @@ function ManagerDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-4">
+      <div className="grid grid-cols-1">
         {/* Overview Section */}
         <section className="p-6 border border-gray-200 bg-white rounded-2xl">
-          <h2 className="text-xl font-bold mb-4">Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h2 className="text-lg md:text-xl font-bold mb-4">Overview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             {loading ? (
               Array(4)
                 .fill(0)
@@ -150,42 +150,21 @@ function ManagerDashboard() {
             )}
           </div>
         </section>
-
-        {/* Calendar Section */}
-        <div className="p-6 rounded-2xl bg-white border border-gray-200">
-          <h2 className="text-xl font-bold mb-4">Calendar</h2>
-          <div className="p-3 bg-white rounded-xl border border-gray-200 shadow">
-            {loading ? (
-              <div className="h-64 bg-gray-200 animate-pulse rounded-xl" />
-            ) : (
-              <Calendar
-                onChange={(date) => setSelectedDate(date as Date)}
-                value={selectedDate}
-                className="rounded-xl shadow border border-gray-200 w-full"
-                tileClassName={({ date }) => {
-                  const formatted = date.toISOString().split("T")[0];
-                  const taskDue = [...teamTasks].find(
-                    (t) => t.dueDate === formatted
-                  );
-                  return taskDue ? "bg-orange-200 rounded-full" : "";
-                }}
-              />
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Team Tasks Section */}
       <section className="border border-gray-200 p-6 rounded-2xl bg-white">
-        <h2 className="text-xl font-bold mb-4">Tasks Assigned to Team</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-4">
+          Tasks Assigned to Team
+        </h2>
         <ul className="flex space-x-3 overflow-x-auto">
           {loading
-            ? Array(5)
+            ? Array(2)
                 .fill(0)
                 .map((_, idx) => (
                   <div
                     key={idx}
-                    className="w-48 h-32 bg-gray-200 animate-pulse rounded-xl"
+                    className="w-48 h-28 bg-gray-200 animate-pulse rounded-xl"
                   />
                 ))
             : upcomingTasks.map((task) => (
@@ -248,10 +227,10 @@ function ManagerDashboard() {
 
       {/* Projects Section */}
       <section className="border rounded-2xl bg-white p-6 border-gray-200">
-        <h2 className="text-xl font-bold mb-6">Projects</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-6">Projects</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {loading
-            ? Array(4)
+            ? Array(2)
                 .fill(0)
                 .map((_, idx) => (
                   <div
@@ -259,7 +238,7 @@ function ManagerDashboard() {
                     className="p-6 h-48 bg-gray-200 rounded-xl animate-pulse"
                   />
                 ))
-            : projects.map((project) => {
+            : projects.slice(0, 4).map((project) => {
                 const projectTasks =
                   project.tasks?.filter((t) => t.projectId === project.id) ||
                   [];
@@ -274,11 +253,13 @@ function ManagerDashboard() {
                 return (
                   <div
                     key={project.id}
-                    className="p-6 bg-white rounded-xl space-y-4 border border-gray-200 shadow hover:shadow-md transition"
+                    className="p-4 md:p-6 bg-white rounded-xl space-y-4 border border-gray-200 shadow hover:shadow-md transition"
                   >
                     <div className="flex justify-between">
-                      <h3 className="text-2xl font-bold">{project.name}</h3>
-                      <p className="text-sm font-medium">
+                      <h3 className="text-lg md:text-2xl font-bold">
+                        {project.name}
+                      </h3>
+                      <p className="text-[10px] md:text-sm font-medium">
                         <span
                           className={
                             project.status === "active"
@@ -297,22 +278,24 @@ function ManagerDashboard() {
                       </p>
                     </div>
 
-                    <p className="text-lg text-gray-600 font-semibold">
+                    <p className="text-xs md:text-lg text-gray-600 font-semibold">
                       {project.description}
                     </p>
-                    <p className="text-md text-gray-500">
+                    <p className="text-[10px] md:text-[14px] text-gray-500">
                       Created At:{" "}
                       {new Date(project.createdAt).toLocaleDateString()}
                     </p>
 
-                    <div className="w-full flex space-x-4">
-                      <div className="mt-2 w-3/4 bg-gray-200 h-3 rounded-full">
+                    <div className="w-full md:flex md:space-x-4">
+                      <div className="mt-2 w-full md:w-3/4 bg-gray-200 h-3 rounded-full">
                         <div
                           className="h-3 rounded-full bg-green-500"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
-                      <p className="text-sm mt-1">{progress}% completed</p>
+                      <p className="text-[10px] md:text-sm mt-1">
+                        {progress}% completed
+                      </p>
                     </div>
                   </div>
                 );

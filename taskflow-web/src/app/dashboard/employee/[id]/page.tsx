@@ -105,7 +105,6 @@ export default function DashboardPage() {
           <h2 className="text-lg md:text-xl font-bold mb-4">Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             {loading ? (
-              // Skeleton for Overview Cards
               Array(4)
                 .fill(0)
                 .map((_, idx) => (
@@ -163,9 +162,9 @@ export default function DashboardPage() {
       {/* Upcoming Tasks */}
       <section className="border border-gray-200 p-6 rounded-2xl bg-white">
         <h2 className="text-lg md:text-xl font-bold mb-4">Upcoming Tasks</h2>
-        <ul className="flex space-x-3 overflow-y-auto">
+        <ul className="flex space-x-3 overflow-x-auto">
           {loading
-            ? Array(5)
+            ? Array(2)
                 .fill(0)
                 .map((_, idx) => (
                   <div
@@ -244,7 +243,7 @@ export default function DashboardPage() {
                   .map((_, idx) => (
                     <div
                       key={idx}
-                      className="h-40 bg-gray-200 animate-pulse rounded-xl"
+                      className="p-6 h-48 bg-gray-200 rounded-xl animate-pulse"
                     />
                   ))
               : projects.slice(0, 4).map((project) => {
@@ -291,7 +290,7 @@ export default function DashboardPage() {
                         {project.description}
                       </p>
 
-                      <p className="text-[10px] md:text-md text-gray-500">
+                      <p className="text-[10px] md:text-[14px] text-gray-500">
                         Created At:{" "}
                         {new Date(project.createdAt).toLocaleDateString()}
                       </p>

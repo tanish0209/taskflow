@@ -183,22 +183,17 @@ export const ProjectService = {
         isRead: false,
       });
     }
-
-    await prisma.project.delete({
-      where: { id },
-    });
-
     await logEvent("Project Deleted", {
       projectId: id,
       details: `Project ${existingProject.name} deleted`,
     });
-
-    // 🔔 Real-time update to project room
     await emitSocketEvent("project-deleted", {
       room: `project_${id}`,
       data: { id },
     });
-
+    await prisma.project.delete({
+      where: { id },
+    });
     return { message: "Project deleted successfully" };
   },
 };

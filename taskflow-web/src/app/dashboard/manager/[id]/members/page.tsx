@@ -84,7 +84,7 @@ export default function ProjectMembersPage() {
   if (loading) {
     return (
       <div className="p-6 space-y-10">
-        <h1 className="text-3xl font-bold">Project Members</h1>
+        <h1 className="text-lg md:text-xl font-bold mb-6">Project Members</h1>
         {[1, 2].map((proj) => (
           <div key={proj} className="space-y-4">
             <div className="h-6 bg-gray-300 rounded w-1/4 animate-pulse"></div>
@@ -101,7 +101,7 @@ export default function ProjectMembersPage() {
 
   return (
     <div className="p-6 space-y-6 bg-white rounded-2xl border border-gray-200">
-      <h1 className="text-3xl font-bold">Project Members</h1>
+      <h1 className="text-lg md:text-xl font-bold mb-6">Project Members</h1>
 
       {projects.length === 0 ? (
         <p className="text-gray-500">No projects found.</p>
@@ -117,48 +117,47 @@ export default function ProjectMembersPage() {
               key={project.id}
               className="space-y-4 bg-white rounded-2xl border border-gray-200 p-6"
             >
-              <h2 className="text-2xl font-semibold text-orange-600">
+              <h2 className="text-sm md:text-lg  font-semibold text-orange-600">
                 {project.name}
               </h2>
 
-              <div className="border border-gray-400 rounded-md bg-white shadow">
-                {/* Header Row */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 font-semibold text-gray-700 bg-gray-50 px-4 py-2 border-b border-b-gray-200">
-                  <p className="text-center">Name</p>
-                  <p className="text-center hidden lg:block">Email</p>
-                  <p className="text-center hidden lg:block">Joined</p>
-                  <p className="text-center">Role</p>
-                </div>
+              <div className="border border-gray-400 rounded-md overflow-x-auto bg-white shadow">
+                <div className="overflow-x-auto">
+                  {/* Table wrapper with fixed min width */}
+                  <div className="min-w-160">
+                    {/* Header Row */}
+                    <div className="grid grid-cols-4 text-sm font-semibold text-gray-700 bg-gray-50 px-4 py-2 border-b border-b-gray-200">
+                      <p className="text-center">Name</p>
+                      <p className="text-center">Email</p>
+                      <p className="text-center">Joined</p>
+                      <p className="text-center">Role</p>
+                    </div>
 
-                {/* Scrollable Member List */}
-                <div className="max-h-64 overflow-y-auto">
-                  {sortedMembers.length > 0 ? (
-                    sortedMembers.map((mem) => (
-                      <div
-                        key={mem.id}
-                        className="grid grid-cols-2 lg:grid-cols-4 items-center px-4 py-2 border-b border-b-gray-200"
-                      >
-                        <p className="font-medium text-center">
-                          {mem.user.name}
-                        </p>
-                        <p className="text-sm hidden lg:block text-gray-500 text-center">
-                          {mem.user.email}
-                        </p>
-                        <p className="text-sm hidden lg:block text-gray-400 text-center">
-                          {new Date(mem.joinedAt).toLocaleDateString()}
-                        </p>
-                        <div className="flex justify-center">
-                          <span className="px-3 py-1 rounded-full bg-orange-200 text-orange-700 text-sm">
-                            {mem.user.role}
-                          </span>
+                    {/* Scrollable body (vertical only) */}
+                    <div className="max-h-64 overflow-y-auto">
+                      {sortedMembers.map((mem) => (
+                        <div
+                          key={mem.id}
+                          className="grid grid-cols-4 px-4 py-2 border-b border-b-gray-200"
+                        >
+                          <p className="font-medium text-sm text-center">
+                            {mem.user.name}
+                          </p>
+                          <p className="text-sm text-gray-500 text-center">
+                            {mem.user.email}
+                          </p>
+                          <p className="text-sm text-gray-400 text-center">
+                            {new Date(mem.joinedAt).toLocaleDateString()}
+                          </p>
+                          <div className="flex justify-center">
+                            <span className="px-3 py-1 rounded-full bg-orange-200 text-orange-700 text-sm">
+                              {mem.user.role}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 italic p-4 text-center">
-                      No members in this project
-                    </p>
-                  )}
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

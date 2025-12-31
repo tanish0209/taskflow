@@ -69,9 +69,7 @@ export default function TasksPage() {
   }, [session]);
   useEffect(() => {
     if (projects.length === 0) return;
-
     const socket: Socket = getSocket();
-
     const onConnect = () => {
       setIsSocketConnected(true);
       projects.forEach((project) => {
@@ -181,7 +179,7 @@ export default function TasksPage() {
                     />
                   ))
                 ) : (
-                  <p className="text-gray-500 italic">
+                  <p className="text-gray-500 text-sm italic">
                     No tasks yet for this project
                   </p>
                 )}

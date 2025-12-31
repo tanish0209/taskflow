@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 import axios from "axios";
 import ProjectCard from "@/components/ui/ProjectCard";
@@ -71,7 +71,7 @@ export default function MyProjectsPage() {
     };
 
     fetchProjects();
-  }, []);
+  }, [userId]);
   const handleProjectRequest = async () => {
     try {
       const res = await axios.post(`/api/joinRequests`, {
@@ -85,41 +85,39 @@ export default function MyProjectsPage() {
       } else {
         window.Error(res.data.message || "Failed to send request");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
     }
   };
 
   return (
-    <div className="p-6 space-y-6 bg-white rounded-2xl border border-gray-200">
-      <div className="flex items-center justify-between  mb-6">
-        <h1 className="text-2xl font-bold">Project Overview</h1>
-        <div className="flex gap-4">
+    <div className="p-4 sm:p-6 space-y-6 bg-white rounded-2xl border border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Project Overview</h1>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <input
             type="text"
             value={projectCode}
             onChange={(e) => setProjectCode(e.target.value)}
             placeholder="Enter Project Id to Join"
-            className="border border-gray-200 rounded-xl px-2 py-2"
+            className="border border-gray-300 rounded-xl px-3 py-2 w-full sm:w-64 text-sm"
           />
           <button
             onClick={handleProjectRequest}
-            className="px-3 py-2 w-full rounded-full bg-gradient-to-r from-orange-500 to-orange-700 text-white  hover:bg-gradient-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
+            className="px-4 py-2 rounded-full bg-linear-to-r from-orange-500 to-orange-700 text-white text-sm font-semibold hover:opacity-90 transition"
           >
             Request to Join
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 6 }).map((_, i) => (
             <ProjectCardSkeleton key={i} />
           ))
         ) : projects.length === 0 ? (
-          <p className="text-center text-gray-500 col-span-full">
-            No projects found.
-          </p>
+          <p className="text-center text-gray-500">No projects found.</p>
         ) : (
           projects.map((project) => {
             const completedTasks = project.tasks.filter(

@@ -5,19 +5,19 @@ declare module "next-auth" {
   interface Session extends DefaultUser {
     user: {
       id: string;
-      role: string;
+      role: "employee" | "manager" | "team_lead" | "admin";
     } & DefaultSession["user"];
   }
 
   interface User extends DefaultUser {
     id: string;
-    role: string;
+    role: "employee" | "manager" | "team_lead" | "admin";
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     id: string;
-    role: string;
+    role: "employee" | "manager" | "team_lead" | "admin";
   }
 }

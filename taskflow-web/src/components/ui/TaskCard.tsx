@@ -11,7 +11,7 @@ interface TaskCardProps {
   employeeId: string;
   status: "todo" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high";
-  role: "employee" | "team_lead" | "manager" | "admin";
+  role: "employee" | "team_lead" | "manager" | "admin" | undefined;
   taskLink: string;
   onStatusChange?: (taskId: string, newStatus: TaskCardProps["status"]) => void;
 }
@@ -93,7 +93,6 @@ function TaskCard({
         Due: {new Date(dueDate).toLocaleDateString()}
       </p>
 
-      {/* 👇 Role-based condition */}
       {(role === "employee" || role === "team_lead") && onStatusChange && (
         <select
           value={status}

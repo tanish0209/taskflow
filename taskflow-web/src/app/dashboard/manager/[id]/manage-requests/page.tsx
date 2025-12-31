@@ -111,8 +111,8 @@ export default function ManagerJoinRequestsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-10">
-        <h1 className="text-3xl font-bold">Join Requests</h1>
+      <div className="border p-3 md:p-6 border-gray-200 bg-white rounded-2xl space-y-10">
+        <h1 className="text-2xl md:text-3xl font-bold">Join Requests</h1>
         {[1, 2].map((proj) => (
           <div key={proj} className="space-y-4">
             <div className="h-6 bg-gray-300 rounded w-1/4 animate-pulse"></div>
@@ -128,8 +128,8 @@ export default function ManagerJoinRequestsPage() {
   }
 
   return (
-    <div className="p-6 space-y-10">
-      <h1 className="text-3xl font-bold">Join Requests</h1>
+    <div className="border border-gray-200 bg-white rounded-2xl p-4 md:p-6 space-y-4 md:space-y-10">
+      <h1 className="text-lg md:text-xl font-bold mb-6">Join Requests</h1>
 
       {Object.keys(requestsByProject).length === 0 ? (
         <p className="text-gray-500">No join requests found.</p>
@@ -140,7 +140,7 @@ export default function ManagerJoinRequestsPage() {
               projectRequests[0]?.project.name || "Unnamed Project";
             return (
               <div key={projectId} className="space-y-4">
-                <h2 className="text-2xl font-semibold text-gray-800">
+                <h2 className="text-xl md:text-2xl font-semibold text-orange-600">
                   {projectName}
                 </h2>
 
@@ -151,15 +151,17 @@ export default function ManagerJoinRequestsPage() {
                       className="border border-gray-300 p-4 rounded-lg bg-gray-50 flex justify-between items-center"
                     >
                       <div>
-                        <p className="font-semibold">{req.user.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm md:text-base font-semibold">
+                          {req.user.name}
+                        </p>
+                        <p className="text-[10px] md:text-sm text-gray-500">
                           {req.user.email}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-[8px] md:text-xs text-gray-400">
                           Requested: {new Date(req.createdAt).toLocaleString()}
                         </p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className=" space-y-2 md:space-y-0 md:flex text-xs md:text-base gap-2">
                         {req.status === "PENDING" ? (
                           <>
                             <button
@@ -177,7 +179,7 @@ export default function ManagerJoinRequestsPage() {
                           </>
                         ) : (
                           <span
-                            className={`px-3 py-1 rounded-full text-sm ${
+                            className={`px-3 py-1 rounded-full text-xs md:text-sm ${
                               req.status === "APPROVED"
                                 ? "bg-green-200 text-green-700"
                                 : "bg-red-200 text-red-700"

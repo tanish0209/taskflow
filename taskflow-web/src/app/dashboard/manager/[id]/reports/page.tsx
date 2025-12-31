@@ -97,7 +97,7 @@ export default function ReportsPage() {
   if (loading) {
     return (
       <div className="p-6 space-y-10">
-        <h1 className="text-3xl font-bold">Reports Dashboard</h1>
+        <h1 className="text-lg md:text-xl font-bold mb-6">Reports Dashboard</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Overview Skeletons */}
@@ -221,7 +221,7 @@ export default function ReportsPage() {
 
   return (
     <div className="p-6 space-y-10 bg-white rounded-2xl border border-gray-200">
-      <h1 className="text-3xl font-bold">Reports Dashboard</h1>
+      <h1 className="text-lg md:text-xl font-bold mb-6">Reports Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Overview Cards */}
         <div className="grid grid-cols-1 gap-4">
@@ -240,7 +240,9 @@ export default function ReportsPage() {
         </div>
         {/* Upcoming Deadlines */}
         <div className="bg-white border border-gray-200 shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Upcoming Deadlines</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-6">
+            Upcoming Deadlines
+          </h2>
           <div className="max-h-60 overflow-y-auto">
             {upcomingDeadlines.length > 0 ? (
               upcomingDeadlines.map((task) => (
@@ -262,7 +264,9 @@ export default function ReportsPage() {
       </div>
       {/* Task Status Report */}
       <div className="bg-white border border-gray-200 shadow rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Task Status Report</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-6">
+          Task Status Report
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(taskStats).map(([status, count]) => (
             <div
@@ -280,7 +284,7 @@ export default function ReportsPage() {
 
       {/* Member Analytics */}
       <div className="bg-white border border-gray-200 shadow rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Member Analytics</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-6">Member Analytics</h2>
         <div className="max-h-60 overflow-y-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">

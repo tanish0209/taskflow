@@ -55,11 +55,11 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 gap-x-4">
+      <div className="grid grid-cols-1">
         {/* Overview Section */}
         <section className="p-6 border border-gray-200 bg-white rounded-2xl">
           <h2 className="text-xl font-bold mb-4">Overview</h2>
-          <div className="grid grid-cols-1 lg:flex lg:justify-around">
+          <div className="grid grid-cols-1 gap-x-4 lg:flex lg:justify-around">
             {loading ? (
               Array(4)
                 .fill(0)

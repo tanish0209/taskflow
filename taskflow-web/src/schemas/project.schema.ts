@@ -5,7 +5,7 @@ export const createProjectSchema = z.object({
     .string()
     .min(4, { error: "Project Title is too short" })
     .max(100, { error: "Project Title is too long" }),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
   status: projectStatusEnum.default("active"),
   ownerId: z.cuid({ error: "Invalid owner Id" }),
 });
