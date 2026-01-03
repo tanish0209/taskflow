@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Trash2 } from "lucide-react";
 
 interface User {
@@ -17,6 +17,17 @@ interface Project {
   role: string;
 }
 
+const getAxiosErrorMessage = (err: unknown) => {
+  if (axios.isAxiosError(err)) {
+    return (
+      err.response?.data?.message ||
+      err.message ||
+      "Request failed"
+    );
+  }
+  return "Unexpected error occurred";
+};
+
 export default function ManageUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
@@ -31,48 +42,63 @@ export default function ManageUsersPage() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
+
         const res = await axios.get(`/api/users?page=${page}&limit=${limit}`);
+
         setUsers(res.data.users);
         setTotalUsers(res.data.total);
       } catch (err: unknown) {
-        setError(err.response?.data?.message || "Failed to fetch users");
+        setError(getAxiosErrorMessage(err));
       } finally {
         setLoading(false);
       }
     };
+
     fetchUsers();
   }, [page]);
 
   const totalPages = Math.ceil(totalUsers / limit);
 
+  // ---------- Delete User ----------
   const handleDelete = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
+
     try {
       await axios.delete(`/api/users/${userId}`);
+
       setUsers((prev) => prev.filter((u) => u.id !== userId));
     } catch (err: unknown) {
-      alert(err.response?.data?.message || "Failed to delete user");
+      alert(getAxiosErrorMessage(err));
     }
   };
 
+  // ---------- Change Role ----------
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await axios.patch(`/api/users/${userId}`, { role: newRole });
+
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+        prev.map((u) =>
+          u.id === userId ? { ...u, role: newRole } : u
+        )
       );
-    } catch {
-      alert("Failed to update role");
+    } catch (err: unknown) {
+      alert(getAxiosErrorMessage(err));
     }
   };
 
+  // ---------- Fetch Projects for Hover Row ----------
   const fetchProjects = async (userId: string) => {
     if (!projects[userId]) {
       try {
         const res = await axios.get(`/api/projects/user/${userId}`);
-        setProjects((prev) => ({ ...prev, [userId]: res.data.data }));
-      } catch {
-        alert("Failed to load user projects");
+
+        setProjects((prev) => ({
+          ...prev,
+          [userId]: res.data.data,
+        }));
+      } catch (err: unknown) {
+        alert(getAxiosErrorMessage(err));
       }
     }
   };
@@ -136,9 +162,10 @@ export default function ManageUsersPage() {
                   <th className="px-4 py-3 text-left w-[15%]">Role</th>
                   <th className="px-4 py-3 text-left w-[25%]">Projects</th>
                   <th className="px-4 py-3 text-left w-[15%]">Created At</th>
-                  <th className="px-4 py-3  w-[10%] text-center">Delete</th>
+                  <th className="px-4 py-3 w-[10%] text-center">Delete</th>
                 </tr>
               </thead>
+
               <tbody className="bg-white divide-y divide-gray-100">
                 {users.map((user, index) => (
                   <tr
@@ -149,9 +176,11 @@ export default function ManageUsersPage() {
                     <td className="px-4 py-3">
                       {(page - 1) * limit + index + 1}
                     </td>
+
                     <td className="text-xs md:text-sm px-4 py-3 font-medium text-gray-700">
                       {user.name}
                     </td>
+
                     <td className="px-4 py-3">
                       <select
                         value={user.role}
@@ -165,26 +194,23 @@ export default function ManageUsersPage() {
                         <option value="manager">Manager</option>
                       </select>
                     </td>
+
                     <td className="px-4 py-3 text-gray-700">
                       {projects[user.id] ? (
                         projects[user.id].length === 0 ? (
-                          <div>
-                            <p className="text-gray-400 text-xs md:text-sm">
-                              No projects
-                            </p>
-                          </div>
+                          <p className="text-gray-400 text-xs md:text-sm">
+                            No projects
+                          </p>
                         ) : (
                           <div className="flex flex-col gap-2">
                             {projects[user.id].map((p) => (
                               <div
                                 key={p.id}
-                                className="flex items-center text-sm"
+                                className="px-3 py-2 bg-orange-100 rounded-full"
                               >
-                                <div className="px-3 py-2 bg-orange-100 rounded-full">
-                                  <span className="text-xs md:text-sm font-medium">
-                                    {p.name}
-                                  </span>
-                                </div>
+                                <span className="text-xs md:text-sm font-medium">
+                                  {p.name}
+                                </span>
                               </div>
                             ))}
                           </div>

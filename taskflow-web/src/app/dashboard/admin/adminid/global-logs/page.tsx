@@ -2,9 +2,26 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+interface ActivityLogUser {
+  id: string;
+  name: string;
+  email: string;
+}
 
+interface ActivityLog {
+  id: string;
+  action: string;
+  details?: string | null;
+  createdAt: string;
+
+  userId?: string | null;
+  user?: ActivityLogUser | null;
+
+  taskId?: string | null;
+  projectId?: string | null;
+}
 export default function AdminLogsPage() {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
