@@ -58,15 +58,15 @@ function AdminDashboard() {
       <div className="grid grid-cols-1">
         {/* Overview Section */}
         <section className="p-6 border border-gray-200 bg-white rounded-2xl">
-          <h2 className="text-xl font-bold mb-4">Overview</h2>
-          <div className="grid grid-cols-1 gap-x-4 lg:flex lg:justify-around">
+          <h2 className="text-lg md:text-xl font-bold mb-4">Overview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             {loading ? (
               Array(4)
                 .fill(0)
                 .map((_, idx) => (
                   <div
                     key={idx}
-                    className="w-56 h-40 bg-gray-200 animate-pulse rounded-xl"
+                    className="h-24 bg-gray-200 animate-pulse rounded-xl"
                   />
                 ))
             ) : (
@@ -114,31 +114,35 @@ function AdminDashboard() {
 
       {/* Recent Users Section */}
       <section className="border border-gray-200 p-6 rounded-2xl bg-white">
-        <h2 className="text-xl font-bold mb-4">Recently Registered Users</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-4">
+          Recently Registered Users
+        </h2>
         <ul className="flex space-x-3 overflow-x-auto">
           {loading
-            ? Array(5)
+            ? Array(2)
                 .fill(0)
                 .map((_, idx) => (
                   <div
                     key={idx}
-                    className="w-48 h-32 bg-gray-200 animate-pulse rounded-xl"
+                    className="w-48 h-28 bg-gray-200 animate-pulse rounded-xl"
                   />
                 ))
-            : users.map((user) => (
+            : users.slice(0, 5).map((user) => (
                 <li
                   key={user.id}
-                  className="bg-white rounded-2xl border p-6 border-gray-200"
+                  className="bg-white rounded-2xl border p-6 min-w-30 border-gray-200"
                 >
-                  <h2 className="text-lg text-black font-bold">{user.name}</h2>
-                  <h3 className="text-md text-gray-700 font-medium">
+                  <h2 className="text-sm md:text-lg text-black font-bold">
+                    {user.name}
+                  </h2>
+                  <h3 className="text-xs md:text-sm text-gray-700 font-medium">
                     {user.role === "employee"
                       ? "Employee"
                       : user.role === "team_lead"
                       ? "Team Lead"
                       : "Manager"}
                   </h3>
-                  <h4 className="text-sm text-gray-500 font-light">
+                  <h4 className="text-[10px] md:text-sm text-gray-500 font-light">
                     {new Date(user.createdAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "short",
@@ -152,10 +156,10 @@ function AdminDashboard() {
 
       {/* Projects Section */}
       <section className="border rounded-2xl bg-white p-6 border-gray-200">
-        <h2 className="text-xl font-bold mb-6">Projects</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-6">Projects</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {loading
-            ? Array(4)
+            ? Array(2)
                 .fill(0)
                 .map((_, idx) => (
                   <div
@@ -163,15 +167,17 @@ function AdminDashboard() {
                     className="p-6 h-48 bg-gray-200 rounded-xl animate-pulse"
                   />
                 ))
-            : projects.map((project) => {
+            : projects.slice(0, 4).map((project) => {
                 return (
                   <div
                     key={project.id}
-                    className="p-6 bg-white rounded-xl space-y-4 border border-gray-200 shadow hover:shadow-md transition"
+                    className="p-4 md:p-6 bg-white rounded-xl space-y-4 border border-gray-200 shadow hover:shadow-md transition"
                   >
-                    <div className="flex justify-between">
-                      <h3 className="text-2xl font-bold">{project.name}</h3>
-                      <p className="text-sm font-medium">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg md:text-2xl font-bold">
+                        {project.name}
+                      </h3>
+                      <p className="text-[10px] md:text-sm font-medium">
                         <span
                           className={
                             project.status === "active"
@@ -190,10 +196,10 @@ function AdminDashboard() {
                       </p>
                     </div>
 
-                    <p className="text-lg text-gray-600 font-semibold">
+                    <p className="text-xs md:text-lg text-gray-600 font-semibold">
                       {project.description}
                     </p>
-                    <p className="text-md text-gray-500">
+                    <p className="text-[10px] md:text-[14px] text-gray-500">
                       Created At: {formatDueDate(project.createdAt)}
                     </p>
                   </div>

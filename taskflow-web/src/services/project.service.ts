@@ -27,7 +27,10 @@ export const ProjectService = {
     const newProject = await prisma.project.create({
       data: validatedData,
     });
-
+    const owner = await prisma.user.findUnique({
+      where: { id: validatedData.ownerId },
+      select: { name: true },
+    });
     await emitSocketEvent("project-created", {
       room: `user_${validatedData.ownerId}`,
       data: newProject,
@@ -35,7 +38,7 @@ export const ProjectService = {
 
     await logEvent("Project Created", {
       userId: validatedData.ownerId,
-      details: `Project ${validatedData.name} created by ${validatedData.ownerId}`,
+      details: `Project ${validatedData.name} created by ${owner?.name}`,
     });
 
     return newProject;
@@ -147,6 +150,10 @@ export const ProjectService = {
         });
       }
     }
+    const owner = await prisma.user.findUnique({
+      where: { id: existingProject.ownerId },
+      select: { name: true },
+    });
 
     await emitSocketEvent("project-updated", {
       room: `project_${id}`,
@@ -155,7 +162,7 @@ export const ProjectService = {
 
     await logEvent("Project Updated", {
       projectId: id,
-      details: `Project ${existingProject.name} updated by ${existingProject.ownerId}`,
+      details: `Project ${existingProject.name} updated by ${owner?.name}`,
     });
 
     return updatedProject;

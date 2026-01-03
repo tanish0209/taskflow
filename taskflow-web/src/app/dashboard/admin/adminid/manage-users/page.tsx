@@ -34,7 +34,7 @@ export default function ManageUsersPage() {
         const res = await axios.get(`/api/users?page=${page}&limit=${limit}`);
         setUsers(res.data.users);
         setTotalUsers(res.data.total);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.response?.data?.message || "Failed to fetch users");
       } finally {
         setLoading(false);
@@ -50,7 +50,7 @@ export default function ManageUsersPage() {
     try {
       await axios.delete(`/api/users/${userId}`);
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || "Failed to delete user");
     }
   };
@@ -78,8 +78,8 @@ export default function ManageUsersPage() {
   };
 
   return (
-    <div className="p-8 bg-white border border-gray-200 rounded-2xl">
-      <h1 className="text-3xl font-semibold mb-8 text-gray-800">
+    <div className="p-4 md:p-6 bg-white border border-gray-200 rounded-2xl">
+      <h1 className="text-lg md:text-xl lg:text-3xl font-semibold mb-4 md:mb-8 text-gray-800">
         Manage Users
       </h1>
 
@@ -88,7 +88,7 @@ export default function ManageUsersPage() {
       {/* Skeleton Loader */}
       {loading ? (
         <div className="overflow-x-auto shadow-md rounded-lg animate-pulse">
-          <table className="min-w-full border border-gray-200 text-sm">
+          <table className="min-w-full border border-gray-200 text-xs md:text-sm">
             <thead className="bg-orange-100 text-orange-700">
               <tr>
                 <th className="px-4 py-3 text-left w-[5%]">#</th>
@@ -128,7 +128,7 @@ export default function ManageUsersPage() {
       ) : (
         users.length > 0 && (
           <div className="overflow-x-auto shadow-md rounded-lg">
-            <table className="min-w-full border border-gray-200 text-sm">
+            <table className="min-w-full border border-gray-200 text-xs md:text-sm">
               <thead className="bg-orange-100 text-orange-700">
                 <tr>
                   <th className="px-4 py-3 text-left w-[5%]">#</th>
@@ -136,7 +136,7 @@ export default function ManageUsersPage() {
                   <th className="px-4 py-3 text-left w-[15%]">Role</th>
                   <th className="px-4 py-3 text-left w-[25%]">Projects</th>
                   <th className="px-4 py-3 text-left w-[15%]">Created At</th>
-                  <th className="px-4 py-3 text-left w-[10%]">Delete</th>
+                  <th className="px-4 py-3  w-[10%] text-center">Delete</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
@@ -149,7 +149,7 @@ export default function ManageUsersPage() {
                     <td className="px-4 py-3">
                       {(page - 1) * limit + index + 1}
                     </td>
-                    <td className="px-4 py-3 font-medium text-gray-700">
+                    <td className="text-xs md:text-sm px-4 py-3 font-medium text-gray-700">
                       {user.name}
                     </td>
                     <td className="px-4 py-3">
@@ -158,7 +158,7 @@ export default function ManageUsersPage() {
                         onChange={(e) =>
                           handleRoleChange(user.id, e.target.value)
                         }
-                        className="border rounded px-2 py-1 text-sm"
+                        className="border rounded px-2 py-1 text-xs md:text-sm"
                       >
                         <option value="employee">Employee</option>
                         <option value="team_lead">Team Lead</option>
@@ -169,7 +169,9 @@ export default function ManageUsersPage() {
                       {projects[user.id] ? (
                         projects[user.id].length === 0 ? (
                           <div>
-                            <p className="text-gray-400 text-sm">No projects</p>
+                            <p className="text-gray-400 text-xs md:text-sm">
+                              No projects
+                            </p>
                           </div>
                         ) : (
                           <div className="flex flex-col gap-2">
@@ -179,7 +181,9 @@ export default function ManageUsersPage() {
                                 className="flex items-center text-sm"
                               >
                                 <div className="px-3 py-2 bg-orange-100 rounded-full">
-                                  <span className="font-medium">{p.name}</span>
+                                  <span className="text-xs md:text-sm font-medium">
+                                    {p.name}
+                                  </span>
                                 </div>
                               </div>
                             ))}
@@ -190,16 +194,16 @@ export default function ManageUsersPage() {
                       )}
                     </td>
 
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="text-xs md:text-sm px-4 py-3 text-gray-600">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 flex items-center justify-center">
                       <button
-                        className="text-red-600 hover:underline"
+                        className="text-sm text-red-600 hover:underline"
                         onClick={() => handleDelete(user.id)}
                       >
-                        <Trash2 />
+                        <Trash2 className="size-4 md:size-6" />
                       </button>
                     </td>
                   </tr>

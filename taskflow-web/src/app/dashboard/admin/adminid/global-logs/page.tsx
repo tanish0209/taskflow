@@ -32,22 +32,24 @@ export default function AdminLogsPage() {
 
   return (
     <div className="p-6 bg-white border border-gray-200 rounded-2xl min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 text-gray-800">Admin Logs</h1>
+      <h1 className="text-lg md:text-xl lg:text-3xl font-semibold mb-4 md:mb-6 text-gray-800">
+        Admin Logs
+      </h1>
 
       <div className="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-orange-200">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+              <th className="px-4 py-3 text-left text-xs  md:text-sm font-semibold text-gray-700">
                 Action
               </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+              <th className="px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-700">
                 User
               </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+              <th className="px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-700">
                 Details
               </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+              <th className="px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-700">
                 Date
               </th>
             </tr>
@@ -73,15 +75,15 @@ export default function AdminLogsPage() {
                 ))
               : logs.map((log) => (
                   <tr key={log.id}>
-                    <td className="px-4 py-3 text-sm text-gray-800">
+                    <td className="px-4 py-3 text-xs md:text-sm text-gray-800">
                       {log.action}
                     </td>
 
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-xs md:text-sm text-gray-600">
                       {log.user ? `${log.user.name} (${log.user.email})` : "-"}
                     </td>
 
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-xs md:text-sm text-gray-500">
                       {log.details ? (
                         <pre className="bg-gray-100 p-2 rounded-lg overflow-x-auto">
                           {log.details}
@@ -91,7 +93,7 @@ export default function AdminLogsPage() {
                       )}
                     </td>
 
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-xs md:text-sm text-gray-500">
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
                   </tr>

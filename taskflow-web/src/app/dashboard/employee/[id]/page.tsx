@@ -263,7 +263,7 @@ export default function DashboardPage() {
                       key={project.id}
                       className="p-4 md:p-6 bg-white rounded-xl space-y-4 border border-gray-200 shadow hover:shadow-md transition"
                     >
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <h3 className="text-lg md:text-2xl font-bold">
                           {project.name}
                         </h3>
