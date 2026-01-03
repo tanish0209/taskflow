@@ -113,44 +113,39 @@ export default function ProjectMembersPage() {
           );
 
           return (
-            <div
-              key={project.id}
-              className="space-y-4 bg-white rounded-2xl border border-gray-200 p-6"
-            >
-              <h2 className="text-sm md:text-lg  font-semibold text-orange-600">
+            <div key={project.id} className="space-y-4 ">
+              <h2 className="text-lg md:text-xl  font-semibold text-orange-600">
                 {project.name}
               </h2>
 
               <div className="border border-gray-400 rounded-md overflow-x-auto bg-white shadow">
                 <div className="overflow-x-auto">
-                  {/* Table wrapper with fixed min width */}
-                  <div className="min-w-160">
+                  <div className="min-w-120">
                     {/* Header Row */}
-                    <div className="grid grid-cols-4 text-sm font-semibold text-gray-700 bg-gray-50 px-4 py-2 border-b border-b-gray-200">
+                    <div className="grid grid-cols-4 text-xs md:text-sm font-semibold text-gray-700 bg-gray-50 px-4 py-2 border-b border-b-gray-200">
                       <p className="text-center">Name</p>
                       <p className="text-center">Email</p>
                       <p className="text-center">Joined</p>
                       <p className="text-center">Role</p>
                     </div>
 
-                    {/* Scrollable body (vertical only) */}
                     <div className="max-h-64 overflow-y-auto">
                       {sortedMembers.map((mem) => (
                         <div
                           key={mem.id}
-                          className="grid grid-cols-4 px-4 py-2 border-b border-b-gray-200"
+                          className="grid grid-cols-4 place-items-center px-4 py-2 border-b border-b-gray-200"
                         >
-                          <p className="font-medium text-sm text-center">
+                          <p className="font-medium text-xs md:text-sm text-center">
                             {mem.user.name}
                           </p>
-                          <p className="text-sm text-gray-500 text-center">
+                          <p className="text-xs md:text-sm text-gray-500 text-center">
                             {mem.user.email}
                           </p>
-                          <p className="text-sm text-gray-400 text-center">
+                          <p className="text-xs md:text-sm text-gray-400 text-center">
                             {new Date(mem.joinedAt).toLocaleDateString()}
                           </p>
                           <div className="flex justify-center">
-                            <span className="px-3 py-1 rounded-full bg-orange-200 text-orange-700 text-sm">
+                            <span className="px-3 py-1 rounded-full bg-orange-200 text-orange-700 text-xs md:text-sm">
                               {mem.user.role}
                             </span>
                           </div>

@@ -225,21 +225,21 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Overview Cards */}
         <div className="grid grid-cols-1 gap-4">
-          <div className="bg-orange-600 text-white shadow rounded-lg p-4 text-center">
-            <h2 className="text-lg font-semibold">Total Projects</h2>
-            <p className="text-2xl">{projects.length}</p>
+          <div className="bg-orange-600 text-white shadow rounded-lg p-4 flex md:block justify-between items-center text-center">
+            <h2 className="text-sm md:text-lg font-semibold">Total Projects</h2>
+            <p className="text-lg md:text-2xl">{projects.length}</p>
           </div>
-          <div className="bg-orange-600 text-white shadow rounded-lg p-4 text-center">
-            <h2 className="text-lg font-semibold">Total Tasks</h2>
-            <p className="text-2xl ">{tasks.length}</p>
+          <div className="bg-orange-600 text-white shadow rounded-lg p-4 flex md:block justify-between items-center text-center">
+            <h2 className="text-sm md:text-lg font-semibold">Total Tasks</h2>
+            <p className="text-lg md:text-2xl ">{tasks.length}</p>
           </div>
-          <div className="bg-orange-600 text-white shadow rounded-lg p-4 text-center">
-            <h2 className="text-lg font-semibold">Team Members</h2>
-            <p className="text-2xl ">{uniqueMembers.length}</p>
+          <div className="bg-orange-600 text-white shadow rounded-lg p-4 flex md:block justify-between items-center text-center">
+            <h2 className="text-sm md:text-lg font-semibold">Team Members</h2>
+            <p className="text-lg md:text-2xl ">{uniqueMembers.length}</p>
           </div>
         </div>
         {/* Upcoming Deadlines */}
-        <div className="bg-white border border-gray-200 shadow rounded-lg p-6">
+        <div className="bg-white border border-gray-200 shadow rounded-lg p-3 md:p-6">
           <h2 className="text-lg md:text-xl font-bold mb-6">
             Upcoming Deadlines
           </h2>
@@ -250,8 +250,10 @@ export default function ReportsPage() {
                   key={task.id}
                   className="flex justify-between items-center border-b border-gray-200 p-2"
                 >
-                  <span className="font-medium">{task.title}</span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm md:text-base font-medium">
+                    {task.title}
+                  </span>
+                  <span className="text-xs md:text-sm text-gray-500">
                     {new Date(task.dueDate || "").toLocaleDateString()}
                   </span>
                 </div>
@@ -263,7 +265,7 @@ export default function ReportsPage() {
         </div>
       </div>
       {/* Task Status Report */}
-      <div className="bg-white border border-gray-200 shadow rounded-lg p-6">
+      <div className="bg-white border border-gray-200 shadow rounded-lg p-3 md:p-6">
         <h2 className="text-lg md:text-xl font-bold mb-6">
           Task Status Report
         </h2>
@@ -273,22 +275,22 @@ export default function ReportsPage() {
               key={status}
               className="p-4 rounded-lg bg-white border border-gray-200 text-center shadow-sm"
             >
-              <p className="capitalize font-medium">
+              <p className="text-sm md:text-base capitalize font-medium">
                 {status.replace("_", " ")}
               </p>
-              <p className="text-xl text-orange-600">{count}</p>
+              <p className="text-lg md:text-xl text-orange-600">{count}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Member Analytics */}
-      <div className="bg-white border border-gray-200 shadow rounded-lg p-6">
+      <div className="bg-white border border-gray-200 shadow rounded-lg p-3 md:p-6">
         <h2 className="text-lg md:text-xl font-bold mb-6">Member Analytics</h2>
         <div className="max-h-60 overflow-y-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-xs md:text-sm border rounded-2xl border-gray-200">
             <thead className="bg-gray-50">
-              <tr className="border border-gray-200">
+              <tr className="border-b border-b-gray-200">
                 <th className="px-4 py-2 ">Member</th>
                 <th className="px-4 py-2 ">Tasks Assigned</th>
                 <th className="px-4 py-2">Tasks Completed</th>
