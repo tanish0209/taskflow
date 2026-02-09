@@ -1,13 +1,45 @@
 "use client";
 import Navbar from "@/components/Navbar";
-import {
-  ChartNoAxesCombined,
-  Handshake,
-  Network,
-  Settings,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
+/* ---------- ANIMATION VARIANTS ---------- */
+
+import { Variants } from "framer-motion";
+
+const staggerContainer: Variants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.25, 0.1, 0.25, 1],
+    },
+  },
+};
+
+const fadeScale: Variants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.7,
+      ease: [0.25, 0.1, 0.25, 1],
+    },
+  },
+};
 
 export default function LandingPage() {
   const [formData, setFormData] = useState({
@@ -17,13 +49,39 @@ export default function LandingPage() {
     phone: "",
     message: "",
   });
+  const AboutCards = [
+    {
+      id: 1,
+      image: "/workflow.png",
+      title: "Seamless Workflow Orchestration",
+      desc: "Design and manage your team workflow from start to finish. TaskFlow keeps every process connected, ensuring smooth task transitions & project flow.",
+    },
+    {
+      id: 2,
+      image: "/setup.png",
+      title: "Quick Setup, Zero Hassle",
+      desc: "Get started in minutes - no complex onboarding or configuration. Create projects, invite teammates, and start collaborating instantly.",
+    },
+    {
+      id: 3,
+      image: "/collab.png",
+      title: "Effortless Team Collaboration",
+      desc: "Design and manage your team workflow from start to finish. TaskFlow keeps every process connected, ensuring smooth task transitions & project flow.",
+    },
+    {
+      id: 4,
+      image: "/productivity.png",
+      title: "Organized, Scalable Productivity",
+      desc: "Whether it’s a small team or a large project, TaskFlow adapts to your workflow - helping you scale operations while staying organized and efficient.",
+    },
+  ];
 
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -63,41 +121,67 @@ export default function LandingPage() {
       {/* ---------- HERO SECTION ---------- */}
       <section
         id="home"
-        className="min-h-screen mt-15 sm:mt-0 flex items-center justify-center bg-gray-50 px-6 sm:px-10 md:px-20"
+        className="min-h-screen flex items-center justify-center bg-white px-6 sm:px-10 "
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 max-w-7xl w-full">
-          <div className="flex flex-col gap-4 text-center lg:text-left">
-            <h6 className="text-orange-600 text-base sm:text-lg opacity-80">
-              Streamline smarter. Achieve faster
-            </h6>
-            <h3 className="text-black font-bold text-4xl sm:text-5xl md:text-6xl leading-tight">
-              Elevate Your <br className="hidden sm:block" /> Projects With
-              Precision.
-            </h3>
-            <h6 className="mt-3 text-orange-600 text-base sm:text-lg opacity-80">
-              A modern platform that simplifies tasks, boosts focus, and drives
-              results.
-            </h6>
-            <button
-              onClick={() =>
-                document
-                  .getElementById("about")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-              className="self-center lg:self-start px-5 py-3 mt-4 rounded-full bg-linear-to-r from-orange-500 to-orange-700 text-white text-sm sm:text-base hover:from-orange-600 hover:to-orange-800 transition duration-300"
+        <div className="mx-1 my-4 w-full rounded-2xl bg-linear-to-b from-amber-100 via-orange-200 to-orange-300">
+          <div className=" items-center p-20 pt-40 w-full">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+              className="mb-10 text-center"
             >
-              Learn More
-            </button>
-          </div>
+              <motion.h3
+                variants={fadeUp}
+                className="text-black font-bold text-4xl sm:text-5xl md:text-6xl leading-tight mb-6"
+              >
+                Elevate your <br className="hidden sm:block" /> projects with
+                precision.
+              </motion.h3>
 
-          <div className="flex justify-center bg-orange-400 py-4 rounded-2xl">
-            <Image
-              src="/creative-team-isometric-illustration.png"
-              alt="Creative Team Illustration"
-              width={400}
-              height={400}
-              className="w-64 sm:w-80 md:w-96 lg:w-[400px] h-auto"
-            />
+              <motion.h6
+                variants={fadeUp}
+                className="mt-3 text-orange-600 text-base sm:text-lg opacity-80"
+              >
+                A modern platform that simplifies tasks, boosts focus, and
+                drives results.
+              </motion.h6>
+
+              <motion.h6
+                variants={fadeUp}
+                className="text-orange-600 text-base sm:text-lg opacity-80"
+              >
+                Streamline smarter. Achieve faster
+              </motion.h6>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 60, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.9, ease: "easeOut", delay: 0.8 }}
+              className="flex justify-center bg-white/40 border place-self-center border-white/60 max-w-7xl shadow-xl shadow-orange-500 p-4 rounded-4xl"
+            >
+              <Image
+                src="/dashboard-mock.png"
+                alt="Creative Team Illustration"
+                width={1400}
+                height={1400}
+                className="w-64 sm:w-80 md:w-96 lg:w-450 rounded-3xl h-auto"
+              />
+            </motion.div>
+            <div className="flex justify-center items-center mt-5">
+              <button
+                onClick={() =>
+                  document
+                    .getElementById("about")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="flex gap-4 self-center px-5 py-4 mt-4 rounded-2xl bg-linear-to-r from-orange-500 to-orange-700 text-white text-sm sm:text-base hover:from-orange-600 hover:to-orange-800 transition duration-300"
+              >
+                Learn More
+                <ArrowUpRight />
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -105,53 +189,91 @@ export default function LandingPage() {
       {/* ---------- ABOUT SECTION ---------- */}
       <section
         id="about"
-        className="min-h-screen flex items-center justify-center bg-white px-6 sm:px-10 md:px-20 py-6"
+        className="min-h-screen flex items-center justify-center bg-white px-6 sm:px-10 md:px-20 py-12"
       >
-        <div className="w-full max-w-7xl bg-orange-400 rounded-3xl p-6 sm:p-10 md:p-16">
-          <h4 className="text-orange-800 text-base sm:text-lg mb-4">
-            See Taskflow in Action
-          </h4>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 mb-6">
-            <p className="text-black font-bold text-2xl sm:text-3xl md:text-3xl leading-snug">
-              Empowering Teams to Stay Organized & Achieve More – Effortlessly
-            </p>
-            <p className="hidden md:block text-base text-orange-800">
-              From smart task management to streamlined project tracking,
-              Taskflow helps your team stay productive and aligned at every
-              step. Watch how we simplify work and boost efficiency.
-            </p>
-          </div>
-          <hr className="border-t border-orange-800 my-6" />
+        <div className="w-full rounded-3xl p-6 sm:p-10 md:p-16">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.0 }}
+            className="text-center mb-10"
+          >
+            <h4 className="text-orange-800 text-sm sm:text-base mb-3">
+              See Taskflow in Action
+            </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Feature
-              icon={<Network className="size-10 text-orange-800" />}
-              title="Seamless Workflow Orchestration"
-              desc="Design and manage your team workflow from start to finish. TaskFlow keeps every process connected, ensuring smooth task transitions & project flow."
-            />
-            <Feature
-              icon={<Settings className="size-10 text-orange-800" />}
-              title="Quick Setup, Zero Hassle"
-              desc="Get started in minutes - no complex onboarding or configuration. Create projects, invite teammates, and start collaborating instantly."
-            />
-            <Feature
-              icon={<Handshake className="size-10 text-orange-800" />}
-              title="Effortless Team Collaboration"
-              desc="Bring your team together with shared workspaces, live task updates, and transparent progress tracking - keeping everyone aligned and productive."
-            />
-            <Feature
-              icon={<ChartNoAxesCombined className="size-10 text-orange-800" />}
-              title="Organized, Scalable Productivity"
-              desc="Whether it’s a small team or a large project, TaskFlow adapts to your workflow - helping you scale operations while staying organized and efficient."
-            />
-          </div>
+            <div className="grid grid-cols-1 gap-6">
+              <h2 className="text-black font-bold text-2xl sm:text-3xl md:text-4xl leading-snug">
+                Empowering Teams to Stay Organized & Achieve More — Effortlessly
+              </h2>
+
+              <p className="hidden md:block text-orange-800 text-base leading-relaxed">
+                From smart task management to streamlined project tracking,
+                Taskflow helps your team stay productive and aligned at every
+                step.
+              </p>
+            </div>
+          </motion.div>
+
+          <hr className="border-orange-800/40 mb-10" />
+
+          {/* Cards */}
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl place-self-center"
+          >
+            {AboutCards.map((card) => (
+              <motion.div
+                key={card.id}
+                variants={fadeUp}
+                whileHover={{ scale: 1.05, y: -6 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="grid grid-rows-[2fr_1fr] bg-orange-50/40 rounded-2xl p-5 max-w-120 shadow-lg shadow-orange-100"
+              >
+                {/* Image */}
+                <div className=" flex items-center justify-center rounded-xl p-4">
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    width={500}
+                    height={400}
+                    className="w-full max-w-[18rem] h-auto"
+                  />
+                </div>
+
+                {/* Text */}
+                <div>
+                  <h3 className="text-black font-semibold text-lg sm:text-xl mb-2">
+                    {card.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-justify text-gray-600 leading-relaxed">
+                    {card.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
       {/* ---------- CONTACT SECTION ---------- */}
-      <section id="contact" className="flex flex-col md:flex-row min-h-screen">
+      <section
+        id="contact"
+        className="flex flex-col m-4 md:flex-row min-h-screen"
+      >
         {/* Left side */}
-        <div className="bg-orange-500 text-white flex flex-col justify-center items-center w-full md:w-1/2 px-6 sm:px-10 py-16 relative overflow-hidden text-center md:text-left">
+        <motion.div
+          initial={{ opacity: 0, x: -60 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.0, ease: "easeOut" }}
+          className="bg-orange-500 text-white flex flex-col justify-center items-center w-full md:w-1/3 rounded-4xl mr-4 px-6 sm:px-10 py-16 relative overflow-hidden"
+        >
           <div className="absolute -left-24 -bottom-24 w-80 sm:w-96 h-80 sm:h-96 rounded-full border border-white/60"></div>
           <div className="absolute top-10 left-10 w-60 sm:w-80 h-60 sm:h-80 rounded-full border-dashed border-2 border-white/60"></div>
           <div className="absolute -right-20 md:-right-32 top-1/2 w-48 sm:w-64 h-48 sm:h-64 rounded-full border border-white/60"></div>
@@ -164,10 +286,16 @@ export default function LandingPage() {
               soon.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right side form */}
-        <div className="bg-gray-50 w-full md:w-1/2 flex flex-col justify-center px-6 sm:px-10 md:px-16 py-12 sm:py-16">
+        <motion.div
+          initial={{ opacity: 0, x: 60 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.0, ease: "easeOut", delay: 0.4 }}
+          className="bg-orange-50 w-full md:w-2/3 rounded-4xl flex flex-col justify-center px-6 sm:px-10 md:px-16 py-12 sm:py-16"
+        >
           <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-8 text-center md:text-left">
             Contact Us
           </h3>
@@ -232,10 +360,10 @@ export default function LandingPage() {
               {status === "loading"
                 ? "Sending..."
                 : status === "success"
-                ? "Message Sent ✓"
-                : status === "error"
-                ? "Error! Try Again"
-                : "Submit →"}
+                  ? "Message Sent ✓"
+                  : status === "error"
+                    ? "Error! Try Again"
+                    : "Submit →"}
             </button>
           </form>
 
@@ -249,7 +377,7 @@ export default function LandingPage() {
               ❌ Something went wrong. Please try again.
             </p>
           )}
-        </div>
+        </motion.div>
       </section>
     </main>
   );
@@ -285,28 +413,6 @@ function Input({
         required
         className="w-full border-b border-gray-300 bg-transparent focus:outline-none focus:border-orange-500 py-1 text-sm sm:text-base"
       />
-    </div>
-  );
-}
-
-function Feature({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="flex items-start gap-4 p-4 sm:p-6 bg-orange-300/20 rounded-xl">
-      <div className="shrink-0">{icon}</div>
-      <div>
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
-          {title}
-        </h2>
-        <h5 className="hidden md:block text-sm text-orange-800 mt-1">{desc}</h5>
-      </div>
     </div>
   );
 }

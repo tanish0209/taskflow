@@ -3,7 +3,7 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import "@/styles/calendarOverrides.css";
 import {
   ChevronUp,
@@ -28,11 +28,13 @@ type Props = { children: ReactNode };
 export default function DashboardLayout({ children }: Props) {
   const { data: session, status } = useSession();
   const router = useRouter();
-
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileExpanded, setProfileExpanded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-
+  const isDashboardActive = () =>
+    pathname === `dashboard/${session?.user.role}/${session?.user.id}`;
+  const isActive = (href: string) => pathname.endsWith(href);
   // ----------------------------- AUTH REDIRECT -----------------------------
   useEffect(() => {
     if (status !== "loading" && !session) router.push("/login");
@@ -189,18 +191,18 @@ export default function DashboardLayout({ children }: Props) {
 
       {/* -------------------------------- SIDEBAR -------------------------------- */}
       <aside
-        className={`fixed lg:static top-0 left-0 h-full bg-orange-600 text-white flex flex-col justify-between
+        className={`fixed lg:static top-0 left-0 h-full bg-orange-50/80 text-orange-600 flex flex-col justify-between
         transition-all duration-300 z-40 overflow-hidden
         ${sidebarOpen ? "w-64" : "w-0 lg:w-20"}`}
       >
         {/* ---------- TOP SECTION ---------- */}
         <div>
           {/* Logo + Toggle */}
-          <div className="border-b border-orange-800 flex items-center justify-between px-4 py-3">
+          <div className="border-b border-orange-800 flex items-center justify-between px-4 py-4">
             {sidebarOpen && (
               <Link
                 href="/"
-                className="text-2xl font-bold bg-amber-100 text-black px-4 py-1 rounded-full"
+                className="text-2xl font-bold text-black px-4 py-1 rounded-full"
               >
                 Taskflow<span className="text-orange-700">.</span>
               </Link>
@@ -208,12 +210,12 @@ export default function DashboardLayout({ children }: Props) {
 
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 text-white hover:bg-orange-700 rounded-full"
+              className="p-2 hover:text-white text-orange-600 hover:bg-orange-600 rounded-full"
             >
               {sidebarOpen ? (
                 <X className="w-5 h-5" />
               ) : (
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5 " />
               )}
             </button>
           </div>
@@ -224,7 +226,12 @@ export default function DashboardLayout({ children }: Props) {
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-orange-700 font-medium transition"
+                className={`flex items-center gap-3 px-3 py-3 rounded-full font-medium transition
+      ${
+        isActive(href)
+          ? "text-white bg-orange-600 shadow"
+          : "hover:bg-orange-700"
+      }${sidebarOpen ? "text-left" : "text-center"}`}
               >
                 <Icon className="w-5 h-5" />
                 {sidebarOpen && label}
@@ -235,23 +242,28 @@ export default function DashboardLayout({ children }: Props) {
           {/* Role-specific Links */}
           <div className="p-4">
             {sidebarOpen && (
-              <h2 className="text-sm uppercase text-orange-200 font-bold mb-2">
+              <h2 className="text-sm uppercase text-black font-bold mb-2">
                 {role === "admin"
                   ? "Admin Panel"
                   : role === "manager"
-                  ? "Manager Tools"
-                  : role === "team_lead"
-                  ? "Team Lead Tools"
-                  : "Employee Tools"}
+                    ? "Manager Tools"
+                    : role === "team_lead"
+                      ? "Team Lead Tools"
+                      : "Employee Tools"}
               </h2>
             )}
 
-            <nav className="space-y-2">
+            <nav className="space-y-4">
               {roleLinks[role]?.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-orange-700 font-bold transition"
+                  className={`flex items-center gap-3 px-3 py-3 rounded-full font-medium transition
+      ${
+        isActive(href)
+          ? "text-white bg-orange-600 shadow"
+          : "hover:bg-orange-700"
+      }${sidebarOpen ? "text-left" : "text-center"}`}
                 >
                   <Icon className="w-5 h-5" />
                   {sidebarOpen && label}
@@ -275,7 +287,7 @@ export default function DashboardLayout({ children }: Props) {
               <>
                 <div className="ml-3">
                   <p className="text-sm font-medium">{session.user.name}</p>
-                  <p className="text-xs text-gray-200 capitalize">
+                  <p className="text-xs text-orange-400 capitalize">
                     {role.replace("_", " ")}
                   </p>
                 </div>
@@ -293,7 +305,7 @@ export default function DashboardLayout({ children }: Props) {
             <div className="mt-2 space-y-2">
               <Link
                 href={`/dashboard/user-profile/${session.user.id}`}
-                className="block text-sm p-2 hover:bg-orange-700 rounded"
+                className="block text-sm p-2 hover:bg-orange-300 rounded"
               >
                 Settings
               </Link>

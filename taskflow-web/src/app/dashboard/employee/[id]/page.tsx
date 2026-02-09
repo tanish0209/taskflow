@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "@/styles/calendarOverrides.css";
+import SegmentedProgress from "@/components/ui/SegmentedProgress";
 
 type Task = {
   id: string;
@@ -69,7 +70,7 @@ export default function DashboardPage() {
     });
     socket.on("project-updated", (project: Project) => {
       setProjects((prev) =>
-        prev.map((p) => (p.id === project.id ? project : p))
+        prev.map((p) => (p.id === project.id ? project : p)),
       );
     });
     socket.on("project-deleted", ({ id }: { id: string }) => {
@@ -80,12 +81,12 @@ export default function DashboardPage() {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.status === "done").length;
   const inProgressTasks = tasks.filter(
-    (t) => t.status === "in_progress"
+    (t) => t.status === "in_progress",
   ).length;
   const todoTasks = tasks.filter((t) => t.status == "todo").length;
 
   const upcomingTasks = [...tasks].sort(
-    (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
   );
 
   const formatDueDate = (isoString: string) => {
@@ -161,7 +162,7 @@ export default function DashboardPage() {
 
       {/* Upcoming Tasks */}
       <section className="border border-gray-200 p-6 rounded-2xl bg-white">
-        <h2 className="text-lg md:text-xl font-bold mb-4">Upcoming Tasks</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-4">Recent Tasks</h2>
         <ul className="flex space-x-3 overflow-x-auto">
           {loading
             ? Array(2)
@@ -181,17 +182,17 @@ export default function DashboardPage() {
                       task.priority === "low"
                         ? "Low"
                         : task.priority === "high"
-                        ? "High"
-                        : "Medium"
+                          ? "High"
+                          : "Medium"
                     }
                     statuschiptext={
                       task.status === "done"
                         ? "Done"
                         : task.status === "in_progress"
-                        ? "In Progress"
-                        : task.status === "review"
-                        ? "Review"
-                        : "Todo"
+                          ? "In Progress"
+                          : task.status === "review"
+                            ? "Review"
+                            : "Todo"
                     }
                     title={task.title}
                     dueDate={formatDueDate(task.dueDate)}
@@ -199,33 +200,33 @@ export default function DashboardPage() {
                       task.status === "todo"
                         ? "bg-orange-200"
                         : task.status === "in_progress"
-                        ? "bg-blue-200"
-                        : task.status === "review"
-                        ? "bg-yellow-200"
-                        : "bg-green-200"
+                          ? "bg-blue-200"
+                          : task.status === "review"
+                            ? "bg-yellow-200"
+                            : "bg-green-200"
                     }
                     statuschiptextColor={
                       task.status === "todo"
                         ? "text-orange-600"
                         : task.status === "in_progress"
-                        ? "text-blue-600"
-                        : task.status === "review"
-                        ? "text-yellow-600"
-                        : "text-green-600"
+                          ? "text-blue-600"
+                          : task.status === "review"
+                            ? "text-yellow-600"
+                            : "text-green-600"
                     }
                     chipColor={
                       task.priority === "high"
                         ? "bg-red-200"
                         : task.priority === "medium"
-                        ? "bg-yellow-200"
-                        : "bg-green-200"
+                          ? "bg-yellow-200"
+                          : "bg-green-200"
                     }
                     chiptextColor={
                       task.priority === "high"
                         ? "text-red-600"
                         : task.priority === "medium"
-                        ? "text-yellow-600"
-                        : "text-green-600"
+                          ? "text-yellow-600"
+                          : "text-green-600"
                     }
                   />
                 ))}
@@ -251,7 +252,7 @@ export default function DashboardPage() {
                     project.tasks?.filter((t) => t.projectId === project.id) ||
                     [];
                   const completedCount = projectTasks.filter(
-                    (t) => t.status === "done"
+                    (t) => t.status === "done",
                   ).length;
                   const progress =
                     projectTasks.length > 0
@@ -273,15 +274,15 @@ export default function DashboardPage() {
                               project.status === "active"
                                 ? "text-green-600 bg-green-200 px-3 py-2 rounded-full"
                                 : project.status === "archived"
-                                ? "text-gray-500 bg-gray-200 px-3 py-2 rounded-full"
-                                : "text-blue-600 bg-blue-200 px-3 py-2 rounded-full"
+                                  ? "text-gray-500 bg-gray-200 px-3 py-2 rounded-full"
+                                  : "text-blue-600 bg-blue-200 px-3 py-2 rounded-full"
                             }
                           >
                             {project.status === "active"
                               ? "Active"
                               : project.status === "archived"
-                              ? "Archived"
-                              : "Completed"}
+                                ? "Archived"
+                                : "Completed"}
                           </span>
                         </p>
                       </div>
@@ -296,7 +297,7 @@ export default function DashboardPage() {
                       </p>
 
                       {/* Progress Bar */}
-                      <div className="w-full md:flex md:space-x-4">
+                      {/* <div className="w-full md:flex md:space-x-4">
                         <div className="mt-2 w-full md:w-3/4 bg-gray-200 h-3 rounded-full">
                           <div
                             className="h-3 rounded-full bg-green-500"
@@ -306,7 +307,8 @@ export default function DashboardPage() {
                         <p className="text-[10px] md:text-sm mt-1">
                           {progress}% completed
                         </p>
-                      </div>
+                      </div> */}
+                      <SegmentedProgress value={progress} />
                     </div>
                   );
                 })}
