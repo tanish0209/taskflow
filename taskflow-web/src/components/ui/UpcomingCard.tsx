@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/formatDate";
 import React from "react";
 
 interface UpcomingCardProps {
@@ -49,7 +50,7 @@ function UpcomingCard({
       </h3>
       <hr className="text-gray-200 my-2" />
       <p className={`text-xs md:text-sm  font-medium text-gray-800`}>
-        Due: {dueDate}
+        Due: {formatDate(dueDate)}
       </p>
     </div>
   );

@@ -138,8 +138,8 @@ export const joinRequestService = {
   async getAllJoinRequests() {
     return prisma.joinRequest.findMany({
       include: {
-        user: true,
-        project: true,
+        user: { select: { id: true, name: true, email: true } },
+        project: { select: { id: true, name: true } },
       },
     });
   },
@@ -147,7 +147,7 @@ export const joinRequestService = {
   async getJoinRequestsForProject(projectId: string) {
     return prisma.joinRequest.findMany({
       where: { projectId },
-      include: { user: true },
+      include: { user: { select: { id: true, name: true, email: true } } },
     });
   },
 

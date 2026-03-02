@@ -7,9 +7,8 @@ import axios from "axios";
 import { CalendarX2, Check, Clock, ListChecks } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import Calendar from "react-calendar";
-import "@/styles/calendarOverrides.css";
 import SegmentedProgress from "@/components/ui/SegmentedProgress";
+import { formatDate } from "@/lib/formatDate";
 
 type Task = {
   id: string;
@@ -41,12 +40,13 @@ export default function DashboardPage() {
     if (!userId) return;
     const fetchData = async () => {
       try {
-        const projectsRes = await axios.get(`/api/projects/user/${userId}`);
-        const projectsData: Project[] = projectsRes.data.data || [];
-        setProjects(projectsData);
-        const tasksRes = await axios.get(`/api/tasks/user/${userId}`);
-        const tasksData: Task[] = tasksRes.data.data || [];
-        setTasks(tasksData);
+        // Fetch tasks and projects in parallel instead of sequentially
+        const [projectsRes, tasksRes] = await Promise.all([
+          axios.get(`/api/projects/user/${userId}`),
+          axios.get(`/api/tasks/user/${userId}`),
+        ]);
+        setProjects(projectsRes.data.data || []);
+        setTasks(tasksRes.data.data || []);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -54,28 +54,47 @@ export default function DashboardPage() {
       }
     };
     fetchData();
+
     const socket = getSocket();
     socket.emit("register-user", userId);
-    socket.on("task-created", (task: Task) => {
+
+    const handleTaskCreated = (task: Task) => {
       setTasks((prev) => [...prev, task]);
-    });
-    socket.on("task-updated", (task: Task) => {
+    };
+    const handleTaskUpdated = (task: Task) => {
       setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-    });
-    socket.on("task-deleted", ({ id }: { id: string }) => {
+    };
+    const handleTaskDeleted = ({ id }: { id: string }) => {
       setTasks((prev) => prev.filter((t) => t.id !== id));
-    });
-    socket.on("project-created", (project: Project) => {
+    };
+    const handleProjectCreated = (project: Project) => {
       setProjects((prev) => [...prev, project]);
-    });
-    socket.on("project-updated", (project: Project) => {
+    };
+    const handleProjectUpdated = (project: Project) => {
       setProjects((prev) =>
         prev.map((p) => (p.id === project.id ? project : p)),
       );
-    });
-    socket.on("project-deleted", ({ id }: { id: string }) => {
+    };
+    const handleProjectDeleted = ({ id }: { id: string }) => {
       setProjects((prev) => prev.filter((p) => p.id !== id));
-    });
+    };
+
+    socket.on("task-created", handleTaskCreated);
+    socket.on("task-updated", handleTaskUpdated);
+    socket.on("task-deleted", handleTaskDeleted);
+    socket.on("project-created", handleProjectCreated);
+    socket.on("project-updated", handleProjectUpdated);
+    socket.on("project-deleted", handleProjectDeleted);
+
+    // Cleanup listeners on unmount to prevent memory leaks
+    return () => {
+      socket.off("task-created", handleTaskCreated);
+      socket.off("task-updated", handleTaskUpdated);
+      socket.off("task-deleted", handleTaskDeleted);
+      socket.off("project-created", handleProjectCreated);
+      socket.off("project-updated", handleProjectUpdated);
+      socket.off("project-deleted", handleProjectDeleted);
+    };
   }, [userId]);
 
   const totalTasks = tasks.length;
@@ -89,14 +108,6 @@ export default function DashboardPage() {
     (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
   );
 
-  const formatDueDate = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   return (
     <div className="space-y-4">
@@ -195,7 +206,7 @@ export default function DashboardPage() {
                             : "Todo"
                     }
                     title={task.title}
-                    dueDate={formatDueDate(task.dueDate)}
+                    dueDate={formatDate(task.dueDate)}
                     statuschipColor={
                       task.status === "todo"
                         ? "bg-orange-200"
@@ -293,21 +304,8 @@ export default function DashboardPage() {
 
                       <p className="text-[10px] md:text-[14px] text-gray-500">
                         Created At:{" "}
-                        {new Date(project.createdAt).toLocaleDateString()}
+                        {formatDate(project.createdAt)}
                       </p>
-
-                      {/* Progress Bar */}
-                      {/* <div className="w-full md:flex md:space-x-4">
-                        <div className="mt-2 w-full md:w-3/4 bg-gray-200 h-3 rounded-full">
-                          <div
-                            className="h-3 rounded-full bg-green-500"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        <p className="text-[10px] md:text-sm mt-1">
-                          {progress}% completed
-                        </p>
-                      </div> */}
                       <SegmentedProgress value={progress} />
                     </div>
                   );

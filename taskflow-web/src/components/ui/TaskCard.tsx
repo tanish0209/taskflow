@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/lib/formatDate";
 
 interface TaskCardProps {
   taskId: string;
@@ -90,7 +91,7 @@ function TaskCard({
       <hr className="my-2 text-gray-200" />
 
       <p className="text-[10px] sm:text-sm font-medium text-gray-800">
-        Due: {new Date(dueDate).toLocaleDateString()}
+        Due: {formatDate(dueDate)}
       </p>
 
       {(role === "employee" || role === "team_lead") && onStatusChange && (

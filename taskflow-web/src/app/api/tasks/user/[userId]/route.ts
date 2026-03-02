@@ -9,13 +9,8 @@ export async function GET(
     const { userId } = await params;
     const tasks = await taskService.getTasksByUser(userId);
 
-    const mappedTasks = tasks.map((t) => ({
-      ...t,
-      project: t.project ? { id: t.project.id, name: t.project.name } : null,
-    }));
-
     return NextResponse.json(
-      { success: true, data: mappedTasks },
+      { success: true, data: tasks },
       { status: 200 }
     );
   } catch (error: unknown) {

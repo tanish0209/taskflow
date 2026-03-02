@@ -8,7 +8,6 @@ import { CalendarX2, Check, ListChecks } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
-import "@/styles/calendarOverrides.css";
 
 type Task = {
   id: string;
@@ -41,18 +40,16 @@ export default function TeamLeadDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const myTasksRes = await axios.get(`/api/tasks/user/${id}`);
-        const myTasks: Task[] = myTasksRes.data.data || [];
+        // Fetch all 3 API calls in parallel instead of sequentially
+        const [myTasksRes, assignedTasksRes, projectsRes] = await Promise.all([
+          axios.get(`/api/tasks/user/${id}`),
+          axios.get(`/api/tasks/owner/${id}`),
+          axios.get(`/api/projects/user/${id}`),
+        ]);
 
-        const assignedTasksRes = await axios.get(`/api/tasks/owner/${id}`);
-        const assignedTasks: Task[] = assignedTasksRes.data.data || [];
-
-        const projectsRes = await axios.get(`/api/projects/user/${id}`);
-        const projects: Project[] = projectsRes.data.data || [];
-
-        setTasks(myTasks);
-        setTeamTasks(assignedTasks);
-        setProjects(projects);
+        setTasks(myTasksRes.data.data || []);
+        setTeamTasks(assignedTasksRes.data.data || []);
+        setProjects(projectsRes.data.data || []);
       } catch (err) {
         console.error("Failed to fetch dashboard data", err);
       } finally {
@@ -63,7 +60,8 @@ export default function TeamLeadDashboard() {
     fetchData();
     const socket = getSocket();
     socket.emit("register-user", id);
-    socket.on("task-created", (newTask: Task) => {
+
+    const handleTaskCreated = (newTask: Task) => {
       setTasks((prev) => {
         if (newTask.assigneeId === id) {
           return [...prev, newTask];
@@ -77,19 +75,30 @@ export default function TeamLeadDashboard() {
         }
         return prev;
       });
-    });
-    socket.on("task-updated", (updatedTask: Task) => {
+    };
+    const handleTaskUpdated = (updatedTask: Task) => {
       setTasks((prev) =>
         prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
       );
       setTeamTasks((prev) =>
         prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
       );
-    });
-    socket.on("task-deleted", (deletedTaskId: string) => {
+    };
+    const handleTaskDeleted = (deletedTaskId: string) => {
       setTasks((prev) => prev.filter((t) => t.id !== deletedTaskId));
       setTeamTasks((prev) => prev.filter((t) => t.id !== deletedTaskId));
-    });
+    };
+
+    socket.on("task-created", handleTaskCreated);
+    socket.on("task-updated", handleTaskUpdated);
+    socket.on("task-deleted", handleTaskDeleted);
+
+    // Cleanup listeners on unmount to prevent memory leaks
+    return () => {
+      socket.off("task-created", handleTaskCreated);
+      socket.off("task-updated", handleTaskUpdated);
+      socket.off("task-deleted", handleTaskDeleted);
+    };
   }, [id]);
   // Overview counts
   const tasksAssignedToMe = tasks.length;

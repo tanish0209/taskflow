@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
 import axios from "axios";
-import "@/styles/calendarOverrides.css";
 import { useSession } from "next-auth/react";
 
 interface Task {

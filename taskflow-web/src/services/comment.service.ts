@@ -36,32 +36,40 @@ export const commentService = {
     const mentionPattern = /@(\w+)/g;
     const mentions = [...validatedData.content.matchAll(mentionPattern)];
 
-    if (mentions.length > 0) {
-      for (const match of mentions) {
-        const mentionedUsername = match[1];
-        const mentionedUser = await prisma.user.findFirst({
-          where: {
-            name: { contains: mentionedUsername, mode: "insensitive" },
-          },
-        });
+    // Fire all notification side-effects without blocking the response
+    const sideEffects: Promise<unknown>[] = [];
 
-        if (mentionedUser && mentionedUser.id !== validatedData.authorId) {
-          await notificationService.createNotification({
+    if (mentions.length > 0) {
+      // Batch-fetch all mentioned users in ONE query instead of one per mention
+      const mentionedNames = mentions.map((m) => m[1]);
+      const mentionedUsers = await prisma.user.findMany({
+        where: {
+          name: { in: mentionedNames, mode: "insensitive" },
+          id: { not: validatedData.authorId },
+        },
+        select: { id: true },
+      });
+
+      for (const user of mentionedUsers) {
+        sideEffects.push(
+          notificationService.createNotification({
             type: "mention",
             message: `${author.name} mentioned you in a comment on "${task.title}"`,
-            userId: mentionedUser.id,
+            userId: user.id,
             isRead: false,
-          });
-        }
+          })
+        );
       }
     } else {
       if (task.assigneeId && task.assigneeId !== validatedData.authorId) {
-        await notificationService.createNotification({
-          type: "status_update",
-          message: `${author.name} commented on your task: "${task.title}"`,
-          userId: task.assigneeId,
-          isRead: false,
-        });
+        sideEffects.push(
+          notificationService.createNotification({
+            type: "status_update",
+            message: `${author.name} commented on your task: "${task.title}"`,
+            userId: task.assigneeId,
+            isRead: false,
+          })
+        );
       }
 
       if (
@@ -69,12 +77,14 @@ export const commentService = {
         task.ownerId !== validatedData.authorId &&
         task.ownerId !== task.assigneeId
       ) {
-        await notificationService.createNotification({
-          type: "status_update",
-          message: `${author.name} commented on task: "${task.title}"`,
-          userId: task.ownerId,
-          isRead: false,
-        });
+        sideEffects.push(
+          notificationService.createNotification({
+            type: "status_update",
+            message: `${author.name} commented on task: "${task.title}"`,
+            userId: task.ownerId,
+            isRead: false,
+          })
+        );
       }
     }
 
@@ -83,10 +93,15 @@ export const commentService = {
       createdAt: comment.createdAt.toISOString(),
     };
 
-    await emitSocketEvent("comment-created", {
-      room: `task_${validatedData.taskId}`,
-      data: serializedComment,
-    });
+    sideEffects.push(
+      emitSocketEvent("comment-created", {
+        room: `task_${validatedData.taskId}`,
+        data: serializedComment,
+      })
+    );
+
+    // Don't block — let side-effects complete in background
+    Promise.allSettled(sideEffects).catch(console.error);
 
     return comment;
   },

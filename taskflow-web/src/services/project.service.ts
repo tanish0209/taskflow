@@ -27,19 +27,18 @@ export const ProjectService = {
     const newProject = await prisma.project.create({
       data: validatedData,
     });
-    const owner = await prisma.user.findUnique({
-      where: { id: validatedData.ownerId },
-      select: { name: true },
-    });
-    await emitSocketEvent("project-created", {
-      room: `user_${validatedData.ownerId}`,
-      data: newProject,
-    });
 
-    await logEvent("Project Created", {
-      userId: validatedData.ownerId,
-      details: `Project ${validatedData.name} created by ${owner?.name}`,
-    });
+    // Fire side-effects without blocking response
+    Promise.allSettled([
+      emitSocketEvent("project-created", {
+        room: `user_${validatedData.ownerId}`,
+        data: newProject,
+      }),
+      logEvent("Project Created", {
+        userId: validatedData.ownerId,
+        details: `Project ${validatedData.name} created`,
+      }),
+    ]).catch(console.error);
 
     return newProject;
   },
@@ -65,10 +64,9 @@ export const ProjectService = {
         createdAt: true,
         status: true,
         description: true,
-        projectMember: true,
-        tasks: true,
-        owner: true,
-        joinRequest: true,
+        ownerId: true,
+        owner: { select: { id: true, name: true, email: true } },
+        _count: { select: { tasks: true, projectMember: true, joinRequest: true } },
       },
     });
   },
@@ -78,10 +76,18 @@ export const ProjectService = {
       where: {
         OR: [{ ownerId: userId }, { projectMember: { some: { userId } } }],
       },
-      include: {
-        tasks: true,
-        projectMember: true,
-        owner: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        createdAt: true,
+        ownerId: true,
+        owner: { select: { id: true, name: true } },
+        tasks: {
+          select: { id: true, status: true, projectId: true },
+        },
+        _count: { select: { projectMember: true } },
       },
     });
   },
@@ -121,49 +127,50 @@ export const ProjectService = {
       data: validatedData,
     });
 
+    // Fire side-effects in parallel without blocking response
+    const sideEffects: Promise<unknown>[] = [
+      logEvent("Project Updated", {
+        projectId: id,
+        details: `Project ${existingProject.name} updated`,
+      }),
+      emitSocketEvent("project-updated", {
+        room: `project_${id}`,
+        data: updatedProject,
+      }),
+    ];
+
     if (
       validatedData.status &&
       validatedData.status !== existingProject.status
     ) {
       const members = existingProject.projectMember;
 
-      await logEvent("Project Status Changed", {
-        projectId: id,
-        details: `Project Status Changed from ${existingProject.status} to ${validatedData.status}`,
-      });
+      sideEffects.push(
+        logEvent("Project Status Changed", {
+          projectId: id,
+          details: `Project Status Changed from ${existingProject.status} to ${validatedData.status}`,
+        })
+      );
 
-      for (const member of members) {
-        await notificationService.createNotification({
-          type: "status_update",
-          message: `Project "${existingProject.name}" status changed to ${validatedData.status}`,
-          userId: member.userId,
-          isRead: false,
-        });
+      // Send notifications to all members in parallel instead of sequentially
+      const notifyUserIds = members.map((m) => m.userId);
+      if (!notifyUserIds.includes(existingProject.ownerId)) {
+        notifyUserIds.push(existingProject.ownerId);
       }
 
-      if (!members.some((m) => m.userId === existingProject.ownerId)) {
-        await notificationService.createNotification({
-          type: "status_update",
-          message: `Project "${existingProject.name}" status changed to ${validatedData.status}`,
-          userId: existingProject.ownerId,
-          isRead: false,
-        });
+      for (const userId of notifyUserIds) {
+        sideEffects.push(
+          notificationService.createNotification({
+            type: "status_update",
+            message: `Project "${existingProject.name}" status changed to ${validatedData.status}`,
+            userId,
+            isRead: false,
+          })
+        );
       }
     }
-    const owner = await prisma.user.findUnique({
-      where: { id: existingProject.ownerId },
-      select: { name: true },
-    });
 
-    await emitSocketEvent("project-updated", {
-      room: `project_${id}`,
-      data: updatedProject,
-    });
-
-    await logEvent("Project Updated", {
-      projectId: id,
-      details: `Project ${existingProject.name} updated by ${owner?.name}`,
-    });
+    Promise.allSettled(sideEffects).catch(console.error);
 
     return updatedProject;
   },
@@ -182,25 +189,30 @@ export const ProjectService = {
 
     const members = existingProject.projectMember;
 
-    for (const member of members) {
-      await notificationService.createNotification({
-        type: "status_update",
-        message: `Project "${existingProject.name}" has been deleted`,
-        userId: member.userId,
-        isRead: false,
-      });
-    }
-    await logEvent("Project Deleted", {
-      projectId: id,
-      details: `Project ${existingProject.name} deleted`,
-    });
-    await emitSocketEvent("project-deleted", {
-      room: `project_${id}`,
-      data: { id },
-    });
-    await prisma.project.delete({
-      where: { id },
-    });
+    // Fire all side-effects in parallel without blocking
+    const sideEffects: Promise<unknown>[] = [
+      logEvent("Project Deleted", {
+        projectId: id,
+        details: `Project ${existingProject.name} deleted`,
+      }),
+      emitSocketEvent("project-deleted", {
+        room: `project_${id}`,
+        data: { id },
+      }),
+      // Notify all members in parallel
+      ...members.map((member) =>
+        notificationService.createNotification({
+          type: "status_update",
+          message: `Project "${existingProject.name}" has been deleted`,
+          userId: member.userId,
+          isRead: false,
+        })
+      ),
+    ];
+
+    Promise.allSettled(sideEffects).catch(console.error);
+
+    await prisma.project.delete({ where: { id } });
     return { message: "Project deleted successfully" };
   },
 };

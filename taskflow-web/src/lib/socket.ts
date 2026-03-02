@@ -7,21 +7,9 @@ export const getSocket = (): Socket => {
     socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000", {
       transports: ["websocket", "polling"],
       reconnection: true,
-      reconnectionDelay: 100,
-      reconnectionDelayMax: 10000,
-      reconnectionAttempts: 50000,
-    });
-
-    socket.on("connect", () => {
-      console.log("✅ Socket Connected:", socket!.id);
-    });
-
-    socket.on("connect_error", (error) => {
-      console.error("❌ Socket Connection Error:", error.message);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("❌ Socket Disconnected:", reason);
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 30000,
+      reconnectionAttempts: 20,
     });
   }
 

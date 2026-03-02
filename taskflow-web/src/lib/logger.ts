@@ -6,7 +6,7 @@ const logger = pino({
   base: undefined,
 });
 
-export const logEvent = async (
+export const logEvent = (
   action: string,
   {
     userId,
@@ -20,19 +20,21 @@ export const logEvent = async (
     details?: string;
   } = {}
 ) => {
-  try {
-    await activityLogService.createActivityLog({
+  // Fire-and-forget — return the promise but callers don't need to await it
+  return activityLogService
+    .createActivityLog({
       action,
       userId: userId ?? null,
       taskId: taskId ?? null,
       projectId: projectId ?? null,
       details,
+    })
+    .then(() => {
+      logger.info({ action, userId, taskId, projectId }, "Activity logged");
+    })
+    .catch((error) => {
+      logger.error(error, "Failed to save activity log");
     });
-
-    logger.info({ action, userId, taskId, projectId }, "Activity logged");
-  } catch (error) {
-    logger.error(error, "Failed to save activity log");
-  }
 };
 
 export default logger;

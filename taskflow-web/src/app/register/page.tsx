@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "next-auth/react";
+import GradientButton from "@/components/ui/GradientButton";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -77,19 +78,9 @@ export default function RegisterPage() {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full mb-4 px-4 py-2 border border-gray-400 rounded-lg"
         />
-        <div className="w-full flex flex-col justify-center items-center space-y-4">
-          <button
-            type="submit"
-            className="px-6 py-3 cursor-pointer rounded-full w-full bg-linear-to-r from-orange-500 to-orange-700 text-white  hover:bg-linear-to-r hover:from-orange-600 hover:to-orange-800 transition duration-300"
-          >
-            Register
-          </button>
-          <Link
-            href="/"
-            className=" px-6 py-3 text-center cursor-pointer rounded-full w-full  text-black border hover:bg-gray-200 duration-500"
-          >
-            Go Back
-          </Link>
+        <div className="w-full flex items-center space-x-4">
+          <GradientButton className="w-1/2 text-center" variant="outline" size="md" href="/">Go Back</GradientButton>
+          <GradientButton className="w-1/2 text-center" variant="filled" size="md" type="submit">Register</GradientButton>
         </div>
       </form>
     </div>

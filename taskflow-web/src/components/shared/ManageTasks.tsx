@@ -58,6 +58,14 @@ export default function ManageTasksPage() {
 
   const [userProjects, setUserProjects] = useState<string[]>([]);
 
+  // Simple mapper — no extra API calls needed, assignee data is already in the response
+  function mapTaskNames(data: Task[]): (Task & { assigneeName: string })[] {
+    return data.map((task) => ({
+      ...task,
+      assigneeName: task.assignee?.name || "Unassigned",
+    }));
+  }
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -67,37 +75,16 @@ export default function ManageTasksPage() {
 
         setUserId(session.user.id);
 
-        const res = await axios.get(`/api/tasks/owner/${session.user.id}`);
-        const data: Task[] = res.data?.data || [];
+        // Fetch tasks and projects in parallel instead of sequentially
+        const [tasksRes, projRes] = await Promise.all([
+          axios.get(`/api/tasks/owner/${session.user.id}`),
+          axios.get(`/api/projects/user/${session.user.id}`),
+        ]);
 
-        const tasksWithNames = await Promise.all(
-          data.map(async (task) => {
-            if (task.assignee?.name)
-              return { ...task, assigneeName: task.assignee.name };
+        const tasksData: Task[] = tasksRes.data?.data || [];
+        setTasks(mapTaskNames(tasksData));
 
-            if (task.assigneeId) {
-              try {
-                const userRes = await axios.get<{ data: User }>(
-                  `/api/users/${task.assigneeId}`
-                );
-                const user = userRes.data?.data;
-                return { ...task, assigneeName: user?.name || "Unknown User" };
-              } catch {
-                return { ...task, assigneeName: "Unknown User" };
-              }
-            }
-
-            return { ...task, assigneeName: "Unassigned" };
-          })
-        );
-
-        setTasks(tasksWithNames);
-
-        const projRes = await axios.get(
-          `/api/projects/user/${session.user.id}`
-        );
         const userProjectsData: Project[] = projRes.data?.data || [];
-
         setProjects(userProjectsData);
         setUserProjects(userProjectsData.map((p) => p.id));
       } catch (err) {
@@ -143,29 +130,7 @@ export default function ManageTasksPage() {
       if (userId) {
         const res = await axios.get(`/api/tasks/owner/${userId}`);
         const data: Task[] = res.data?.data || [];
-
-        const tasksWithNames = await Promise.all(
-          data.map(async (task) => {
-            if (task.assignee?.name)
-              return { ...task, assigneeName: task.assignee.name };
-
-            if (task.assigneeId) {
-              try {
-                const userRes = await axios.get<{ data: User }>(
-                  `/api/users/${task.assigneeId}`
-                );
-                const user = userRes.data?.data;
-                return { ...task, assigneeName: user?.name || "Unknown User" };
-              } catch {
-                return { ...task, assigneeName: "Unknown User" };
-              }
-            }
-
-            return { ...task, assigneeName: "Unassigned" };
-          })
-        );
-
-        setTasks(tasksWithNames);
+        setTasks(mapTaskNames(data));
       }
     } catch (err) {
       console.error(err);
@@ -212,7 +177,7 @@ export default function ManageTasksPage() {
           ? formData.tags.split(",").map((t) => t.trim())
           : [],
         dueDate: formData.dueDate
-          ? new Date(formData.dueDate).toString()
+          ? new Date(formData.dueDate).toISOString()
           : null,
       });
 

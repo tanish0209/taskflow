@@ -9,11 +9,7 @@ export const notificationService = {
   async createNotification(data: createNotificationInput) {
     const validatedData = createNotifiationSchema.parse(data);
 
-    const user = await prisma.user.findUnique({
-      where: { id: validatedData.userId },
-    });
-    if (!user) throw new Error("User not found");
-
+    // Removed redundant user lookup — FK constraint handles invalid userId
     const notification = await prisma.notification.create({
       data: validatedData,
     });
@@ -23,18 +19,17 @@ export const notificationService = {
       createdAt: notification.createdAt.toISOString(),
     };
 
-    await emitSocketEvent("notification-created", {
+    // Fire-and-forget — don't block on socket emit
+    emitSocketEvent("notification-created", {
       room: `user_${validatedData.userId}`,
       data: serializedNotification,
-    });
+    }).catch(console.error);
 
     return notification;
   },
 
   async getNotificationsByUser(userId: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new Error("User not found");
-
+    // Removed redundant user lookup — if userId is invalid, findMany returns []
     return prisma.notification.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },

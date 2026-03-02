@@ -7,7 +7,6 @@ import { getToken } from "next-auth/jwt";
 export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    console.log("Token in API route:", token);
 
     if (!token?.role) throw new Error("Unauthorized");
     if (!["manager", "team_lead"].includes(token.role))
@@ -40,19 +39,9 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     const tasks = await taskService.getAllTasks();
-    const mappedTasks = tasks.map((t) => ({
-      ...t,
-      owner: t.owner
-        ? { id: t.owner.id, name: t.owner.name, email: t.owner.email }
-        : null,
-      assignee: t.assignee
-        ? { id: t.assignee.id, name: t.assignee.name, email: t.assignee.email }
-        : null,
-      project: t.project ? { id: t.project.id, name: t.project.name } : null,
-    }));
 
     return NextResponse.json(
-      { success: true, data: mappedTasks },
+      { success: true, data: tasks },
       { status: 200 }
     );
   } catch (error: unknown) {

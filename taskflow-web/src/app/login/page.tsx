@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import GradientButton from "@/components/ui/GradientButton";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -72,20 +73,9 @@ export default function LoginPage() {
         />
 
         {/* Buttons */}
-        <div className="w-full flex flex-col items-center space-y-4">
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-full w-full bg-linear-to-r from-orange-500 to-orange-700 text-white font-semibold text-sm sm:text-base hover:from-orange-600 hover:to-orange-800 shadow-md transition duration-300"
-          >
-            Login
-          </button>
-
-          <Link
-            href="/"
-            className="px-6 py-3 text-center rounded-full w-full text-gray-700 border border-gray-300 font-medium text-sm sm:text-base hover:bg-gray-100 transition duration-300"
-          >
-            Go Back
-          </Link>
+        <div className="w-full flex items-center space-x-4">
+          <GradientButton className="w-1/2 text-center" variant="outline" size="md" href="/">Go Back</GradientButton>
+          <GradientButton className="w-1/2 text-center" variant="filled" size="md" type="submit">Login</GradientButton>
         </div>
       </form>
     </div>

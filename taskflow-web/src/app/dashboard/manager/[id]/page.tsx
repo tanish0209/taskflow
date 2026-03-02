@@ -1,6 +1,5 @@
 "use client";
 import OverviewCard from "@/components/ui/OverviewCard";
-import "@/styles/calendarOverrides.css";
 import UpcomingCard from "@/components/ui/UpcomingCard";
 import { getSocket } from "@/lib/socket";
 import axios from "axios";
@@ -41,14 +40,14 @@ function ManagerDashboard() {
       const userId = session.user.id;
 
       try {
-        const assignedTasksRes = await axios.get(`/api/tasks/owner/${userId}`);
-        const assignedTasks: Task[] = assignedTasksRes.data.data || [];
+        // Fetch tasks and projects in parallel instead of sequentially
+        const [assignedTasksRes, projectsRes] = await Promise.all([
+          axios.get(`/api/tasks/owner/${userId}`),
+          axios.get(`/api/projects/user/${userId}`),
+        ]);
 
-        const projectsRes = await axios.get(`/api/projects/user/${userId}`);
-        const projectsData: Project[] = projectsRes.data.data || [];
-
-        setTeamTasks(assignedTasks);
-        setProjects(projectsData);
+        setTeamTasks(assignedTasksRes.data.data || []);
+        setProjects(projectsRes.data.data || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -60,17 +59,29 @@ function ManagerDashboard() {
     const socket = getSocket();
     const userId = session.user.id;
     socket.emit("register-user", userId);
-    socket.on("task-assigned", (task: Task) => {
+
+    const handleTaskAssigned = (task: Task) => {
       setTeamTasks((prev) => [...prev, task]);
-    });
-    socket.on("task-updated", (task: Task) => {
+    };
+    const handleTaskUpdated = (task: Task) => {
       setTeamTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-    });
-    socket.on("project-updated", (project: Project) => {
+    };
+    const handleProjectUpdated = (project: Project) => {
       setProjects((prev) =>
         prev.map((p) => (p.id === project.id ? project : p))
       );
-    });
+    };
+
+    socket.on("task-assigned", handleTaskAssigned);
+    socket.on("task-updated", handleTaskUpdated);
+    socket.on("project-updated", handleProjectUpdated);
+
+    // Cleanup listeners on unmount to prevent memory leaks
+    return () => {
+      socket.off("task-assigned", handleTaskAssigned);
+      socket.off("task-updated", handleTaskUpdated);
+      socket.off("project-updated", handleProjectUpdated);
+    };
   }, [session]);
 
   const tasksAssigned = teamTasks.length;
