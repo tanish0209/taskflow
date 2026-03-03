@@ -34,12 +34,62 @@ model User{
   joinRequest JoinRequest[]
   projectMember ProjectMember[]
   assigntasks Task[] @relation("AssignedBy") 
+  ownedOrgs Organization[] @relation("OwnedOrganizations")
+  orgMembers OrgMember[]
 }
-
+model Organization{
+  id String @id @default(cuid())
+  name String
+  type OrgType
+  logo String?
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+  ownerId String
+  owner User @relation("OwnedOrganizations",fields:[ownerId],references:[id])
+  companies Company[]
+  members OrgMember[]
+  subscription Subscription?
+  @@index([ownerId])
+}
+enum OrgType{
+  personal
+  enterprise
+}
+model Company{
+  id String @id @default(cuid())
+  name String 
+  description String?
+  logo String?
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Cascade)
+  projects Project[]
+  @@index([organizationId])
+}
+model OrgMember{
+  id String @id @default(cuid())
+  role OrgRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Cascade)
+  userId String 
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  @@unique([organizationId,userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+enum OrgRole{
+  OWNER
+  ADMIN
+  MEMBER
+}
 model Project{
   id String @id @default(cuid())
   name String
   description String?
+  companyId String?
+  company Company? @relation(fields:[companyId],references:[id],onDelete:Cascade)
   status ProjectStatus @default(active) 
   createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
@@ -49,7 +99,7 @@ model Project{
   owner User @relation("UserProjects",fields:[ownerId],references:[id],onDelete:Cascade)
 
   @@index([ownerId])
-
+  @@index([companyId])
   tasks Task[]
   attachments Attachment[]
   activityLogs ActivityLog[]
@@ -209,7 +259,27 @@ model ProjectMember {
 
   @@unique([projectId, userId]) 
 }
+model Subscription{
+  id String @id @default(cuid())
+  plan SubscriptionPlan @default(free)
+  status SubscriptionStatus @default(active)
+  startDate DateTime @default(now())
+  endDate DateTime?
 
+  organizationId String @unique
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Cascade)
+  @@index([organizationId])
+}
+enum SubscriptionPlan{
+  free
+  pro
+  enterprise
+}
+enum SubscriptionStatus{
+  active
+  inactive
+  cancelled
+}
 enum ProjectRole {
   MEMBER
   MANAGER
